@@ -80,7 +80,7 @@ def score(inp: RankInputs, cfg: dict[str, Any], now: datetime | None = None) -> 
     adj = 0.0
     for label in inp.feedback_labels:
         adj += cfg.get("feedback_adjustments", {}).get(label, 0.0)
-    final = max(0.0, min(1.0, s * time_factor + adj))
+    final = max(0.0, min(1.0, (s + adj) * time_factor))
 
     tier = classify_tier(inp, cfg)
     if time_factor == 0.0:

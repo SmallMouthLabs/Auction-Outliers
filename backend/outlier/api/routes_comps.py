@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from sqlalchemy.orm import Session
 
 from ..db import get_db
@@ -64,10 +64,10 @@ async def import_comps(listing_id: int, file: UploadFile = File(...), db: Sessio
 
 
 class CompPatch(BaseModel):
-    comp_type: str | None = None
+    comp_type: str | None = Field(default=None, pattern="^(exact|same_maker|category|active|unsupported)$")
     similarity: float | None = Field(default=None, ge=0, le=1)
-    evidence_quality: str | None = None
-    price: float | None = None
+    evidence_quality: str | None = Field(default=None, pattern="^(high|medium|low)$")
+    price: float | None = Field(default=None, ge=0)
     is_sold: bool | None = None
     differences: str | None = None
     condition: str | None = None
@@ -79,10 +79,16 @@ def patch_comp(listing_id: int, comp_id: int, patch: CompPatch, db: Session = De
     c = next((x for x in l.comparables if x.id == comp_id), None)
     if c is None:
         raise HTTPException(404, "comparable not found")
-    for k, v in patch.model_dump(exclude_unset=True).items():
+    data = patch.model_dump(exclude_unset=True)
+    for k, v in data.items():
         setattr(c, k, v)
     if c.is_sold is False:
         c.comp_type = "active"
+    elif c.comp_type == "active":
+        # flipped to sold without saying how similar it is: treat as category-level until the user classifies it
+        c.comp_type = data.get("comp_type") or "category"
+    if c.comp_type != "active" and c.is_sold is False:
+        c.is_sold = True
     recompute_opportunity(db, l)
     return {"comparable": comp_out(c), "listing": listing_detail(l)}
 
@@ -131,9 +137,17 @@ def search_comps(listing_id: int, data: CompSearchIn, db: Session = Depends(get_
 
 class ValuationOverride(BaseModel):
     expected: float = Field(gt=0)
-    conservative: float | None = None
-    optimistic: float | None = None
+    conservative: float | None = Field(default=None, ge=0)
+    optimistic: float | None = Field(default=None, ge=0)
     note: str = ""
+
+    @model_validator(mode="after")
+    def _ordered(self):
+        c = self.conservative if self.conservative is not None else self.expected
+        o = self.optimistic if self.optimistic is not None else self.expected
+        if not (c <= self.expected <= o):
+            raise ValueError("conservative <= expected <= optimistic is required")
+        return self
 
 
 @router.post("/valuation/override")
@@ -153,9 +167,9 @@ def recalc_valuation(listing_id: int, db: Session = Depends(get_db)):
 
 
 class FinanceQuery(BaseModel):
-    bid: float | None = None
+    bid: float | None = Field(default=None, ge=0)
     platform: str | None = None
-    resale_price: float | None = None
+    resale_price: float | None = Field(default=None, ge=0)
     overrides: dict = Field(default_factory=dict)
     sensitivity: bool = True
 

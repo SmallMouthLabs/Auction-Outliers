@@ -24,8 +24,9 @@ class GeminiProvider(VisionProvider):
 
     def __init__(self, api_key: str, model: str, pricing: dict | None = None):
         from google import genai
+        from google.genai import types
 
-        self._client = genai.Client(api_key=api_key)
+        self._client = genai.Client(api_key=api_key, http_options=types.HttpOptions(retry_options=types.HttpRetryOptions(attempts=3)))
         self.model = model
         self._pricing = pricing
 

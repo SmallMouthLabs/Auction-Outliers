@@ -157,8 +157,8 @@ function Row({ l, compact, onChanged, onOpen }: { l: ListingSummary; compact: bo
       </td>
       <td className="r whitespace-nowrap">
         {fin && fin.max_bid != null ? (
-          <span className={`num rounded px-1.5 py-0.5 ${fin.over_max_bid ? "bg-red/20 font-semibold text-red" : ""}`} title={fin.over_max_bid ? "Current bid exceeds the maximum recommended bid" : "Max recommended bid"}>
-            {money(fin.max_bid)}
+          <span className={`num rounded px-1.5 py-0.5 ${fin.over_max_bid ? "bg-red/20 font-semibold text-red" : ""}`} title={fin.over_max_bid ? "Current bid exceeds the maximum recommended bid" : fin.complete ? "Max recommended bid" : `Max bid computed with unknown costs treated as $0: ${(fin.unknown_costs ?? []).join(", ")}`}>
+            {money(fin.max_bid)}{!fin.complete && <span className="ml-0.5 text-amber" aria-label="unknown costs">?</span>}
           </span>
         ) : <span className="text-dim">—</span>}
       </td>

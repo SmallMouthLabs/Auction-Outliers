@@ -42,7 +42,7 @@ function CompTable({ title, subtitle, comps, listing, onUpdate, used }: { title:
   const [busy, setBusy] = useState<number | null>(null);
   async function patch(c: Comparable, body: Parameters<typeof api.patchComp>[2]) {
     setBusy(c.id);
-    try { await api.patchComp(listing.id, c.id, body); await reload(listing.id, onUpdate); toast.success("Comparable updated", "Valuation recalculated."); }
+    try { await api.patchComp(listing.id, c.id, body); await reload(listing.id, onUpdate); toast.success("Comparable updated", listing.valuation?.method === "user_override" ? "Saved. A user override is active; click Recalculate to use comparables." : "Valuation recalculated."); }
     catch (e) { toast.apiError(e, "Update comparable"); } finally { setBusy(null); }
   }
   async function del(c: Comparable) {
@@ -115,7 +115,7 @@ function AddCompForm({ listing, onUpdate }: { listing: ListingDetail; onUpdate: 
       condition: f.condition || null, differences: f.differences || null, source: "manual",
     };
     setBusy(true);
-    try { await api.addComp(listing.id, body); await reload(listing.id, onUpdate); toast.success("Comparable added", "Valuation recalculated."); setF(blank); }
+    try { await api.addComp(listing.id, body); await reload(listing.id, onUpdate); toast.success("Comparable added", listing.valuation?.method === "user_override" ? "Saved. A user override is active; click Recalculate to use comparables." : "Valuation recalculated."); setF(blank); }
     catch (err) { toast.apiError(err, "Add comparable"); } finally { setBusy(false); }
   }
   return (

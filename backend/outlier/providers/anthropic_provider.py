@@ -56,7 +56,7 @@ class AnthropicProvider(VisionProvider):
     def __init__(self, api_key: str, model: str, pricing: dict | None = None, effort: str | None = None):
         import anthropic
 
-        self._client = anthropic.Anthropic(api_key=api_key)
+        self._client = anthropic.Anthropic(api_key=api_key, max_retries=3)  # SDK backoff on 429/5xx/connection errors
         self.model = model
         self._pricing = pricing
         self._effort = effort

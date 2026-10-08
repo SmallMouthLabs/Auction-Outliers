@@ -225,6 +225,7 @@ export function Identification({ listing, onUpdate, onFocusImage }: { listing: L
             <Section title="Reference database matches" count={d.reference_matches?.length} defaultOpen={(d.reference_matches?.length ?? 0) > 0}>
               {!d.reference_matches?.length ? <span className="text-dim">no matches</span> : (
                 <table className="tbl">
+                  <caption className="mb-1 text-left text-[11px] text-dim">Reference entries are identification guidance. "Typical" ranges are approximate notes (seeded or user-entered), not sold comparables, and are never used in the valuation.</caption>
                   <thead><tr><th>Entry</th><th>Type</th><th className="r">Typical</th><th>Demand</th><th>Liq.</th><th className="r">Match</th><th>Hits</th></tr></thead>
                   <tbody>{d.reference_matches.map((r) => (
                     <tr key={r.id}>

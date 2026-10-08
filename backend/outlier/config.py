@@ -30,7 +30,9 @@ class Settings(BaseSettings):
     # --- server ---
     host: str = "127.0.0.1"
     port: int = 8000
-    cors_origins: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    # shopgoodwill.com origins are allowed so the capture bookmarklet (run on a page you are viewing) can read the
+    # import response. The API holds no secrets and binds to localhost; override with OUTLIER_CORS_ORIGINS if desired.
+    cors_origins: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000", "https://shopgoodwill.com", "https://www.shopgoodwill.com"]
     run_worker: bool = True
     worker_poll_seconds: float = 2.0
     log_level: str = "INFO"

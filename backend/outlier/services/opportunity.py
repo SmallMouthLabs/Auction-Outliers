@@ -15,6 +15,7 @@ from ..finance.calc import (
     risk_adjusted_value,
     sensitivity,
 )
+from ..finance.overrides import validate_overrides
 from ..models import Comparable, Feedback, Listing, Opportunity, Valuation
 from ..ranking.score import RankInputs, score
 from ..settings_store import get_all_settings
@@ -84,12 +85,14 @@ def clear_valuation_override(db: Session, l: Listing) -> Valuation:
 
 def finance_inputs(l: Listing, settings: dict[str, Any], *, bid: float | None = None, platform: str | None = None,
                    overrides: dict[str, Any] | None = None) -> tuple[AcquisitionInputs, ResaleInputs, PlatformFees, Thresholds, dict[str, float]]:
-    ov = {**(l.assumptions or {}), **(overrides or {})}
+    ov = {**validate_overrides(l.assumptions), **validate_overrides(overrides)}
     acq_cfg = settings["acquisition"]
     res_cfg = settings["resale"]
     thr_cfg = settings["thresholds"]
     plat = platform or ov.get("platform") or settings["default_platform"]
-    fees = PlatformFees.from_config(plat, settings["platforms"].get(plat, settings["platforms"]["custom"]))
+    if plat not in settings["platforms"]:
+        raise ValueError(f"unknown platform '{plat}'; configured: {sorted(settings['platforms'])}")
+    fees = PlatformFees.from_config(plat, settings["platforms"][plat])
     a = AcquisitionInputs(
         bid=float(bid if bid is not None else (l.current_bid or 0.0)),
         buyer_premium_pct=float(ov.get("buyer_premium_pct", acq_cfg["buyer_premium_pct"])),

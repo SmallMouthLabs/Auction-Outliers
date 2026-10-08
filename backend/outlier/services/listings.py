@@ -30,16 +30,17 @@ class ListingIn(BaseModel):
     source_url: str | None = None
     extraction_method: str | None = None
     title: str = Field(min_length=1, max_length=500)
+    """Stripped before validation (see _strip_title)."""
     description: str | None = None
     category: str | None = None
     seller: str | None = None
     domain: str | None = None
-    current_bid: float | None = None
-    num_bids: int | None = None
-    buy_now_price: float | None = None
+    current_bid: float | None = Field(default=None, ge=0)
+    num_bids: int | None = Field(default=None, ge=0)
+    buy_now_price: float | None = Field(default=None, ge=0)
     ends_at: datetime | None = None
-    shipping_cost: float | None = None
-    handling_fee: float | None = None
+    shipping_cost: float | None = Field(default=None, ge=0)
+    handling_fee: float | None = Field(default=None, ge=0)
     other_costs: dict[str, float] = Field(default_factory=dict)
     measurements: dict[str, Any] = Field(default_factory=dict)
     condition_text: str | None = None
@@ -47,6 +48,18 @@ class ListingIn(BaseModel):
     image_urls: list[str] = Field(default_factory=list)
     raw: dict[str, Any] = Field(default_factory=dict)
     is_demo: bool = False
+
+    @field_validator("title", mode="before")
+    @classmethod
+    def _strip_title(cls, v):
+        return v.strip() if isinstance(v, str) else v
+
+    @field_validator("other_costs")
+    @classmethod
+    def _costs_nonneg(cls, v: dict[str, float]) -> dict[str, float]:
+        if any(x < 0 for x in v.values()):
+            raise ValueError("other_costs must be >= 0")
+        return v
 
     @field_validator("source_url")
     @classmethod
@@ -87,18 +100,18 @@ def extract_sgw_item_id(url: str | None) -> str | None:
 
 def find_duplicate(db: Session, data: ListingIn) -> Listing | None:
     sid = data.source_item_id or extract_sgw_item_id(data.source_url)
+    base = db.query(Listing).filter(Listing.is_demo == data.is_demo)  # demo fixtures never merge with real rows
     if sid:
         # any source sharing the same shopgoodwill item id is the same auction
-        q = db.query(Listing).filter(Listing.source_item_id == sid)
-        hit = q.first()
+        hit = base.filter(Listing.source_item_id == sid).first()
         if hit:
             return hit
     if data.source_url:
-        hit = db.query(Listing).filter(Listing.source_url == data.source_url).first()
+        hit = base.filter(Listing.source_url == data.source_url).first()
         if hit:
             return hit
     fp = fingerprint(data.title, data.seller, data.ends_at, data.image_urls[0] if data.image_urls else None)
-    return db.query(Listing).filter(Listing.fingerprint == fp).first()
+    return base.filter(Listing.fingerprint == fp).first()
 
 
 MUTABLE = ("current_bid", "num_bids", "ends_at", "shipping_cost", "handling_fee", "status", "buy_now_price")
@@ -215,8 +228,30 @@ def store_image_bytes(db: Session, l: Listing, data: bytes, *, remote_url: str |
     return im
 
 
+def _assert_public_host(url: str) -> None:
+    """Refuse to fetch from loopback / private / link-local addresses (SSRF guard)."""
+    import ipaddress
+    import socket
+    from urllib.parse import urlparse
+
+    host = urlparse(url).hostname
+    if not host:
+        raise ValueError("invalid image url")
+    if host in ("localhost",) or host.endswith(".local"):
+        raise ValueError("refusing to fetch from a local host")
+    try:
+        infos = socket.getaddrinfo(host, None)
+    except socket.gaierror as e:
+        raise ValueError(f"cannot resolve host {host}") from e
+    for info in infos:
+        ip = ipaddress.ip_address(info[4][0])
+        if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast or ip.is_unspecified:
+            raise ValueError(f"refusing to fetch from non-public address {ip}")
+
+
 def fetch_image(url: str, timeout: float = 20.0) -> bytes:
     s = get_settings()
+    _assert_public_host(url)
     headers = {"User-Agent": s.sgw_user_agent, "Accept": "image/*"}
     with httpx.Client(timeout=timeout, follow_redirects=True, headers=headers) as c:
         r = c.get(url)

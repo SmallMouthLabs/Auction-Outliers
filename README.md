@@ -31,16 +31,22 @@ Without `uv`: `python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"`. With
 
 Then open http://localhost:3000 and click **Load demo** (or `curl -X POST localhost:8000/api/demo/run`). The demo
 imports seven synthetic auctions, runs the labelled demo analysis, attaches sample comps, computes finance and
-ranks them. Everything demo-related is removable with `DELETE /api/demo`.
+ranks them. Demo listings (with their images, comps and runs) are removable with `DELETE /api/demo`. The run also
+seeds ~25 *reference database* entries (makers, marks, characteristics with approximate 'typical' ranges labelled as
+guidance, not comps); they are ordinary reference rows you can edit or delete at `/reference`.
 
-Run the tests: `cd backend && .venv/bin/python -m pytest -q` (71 tests: finance, valuation, ranking, providers with
-mocked SDKs, ingestion parsers, and the full API workflow incl. the spec's edge cases).
+Run the tests: `cd backend && .venv/bin/python -m pytest -q` (88 tests: finance, valuation, ranking, providers with
+mocked SDKs, ingestion parsers, the model-output guards with adversarial JSON, input validation, and the full API
+workflow incl. the spec's edge cases). Browser e2e: `cd frontend && PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node scripts/e2e.mjs`
+(27 steps against a running backend + frontend; adjust the browsers path for your machine).
 
 ## Analyzing your first real listing
 
 1. **Get the listing in** (choose one):
-   - *Capture bookmarklet* (recommended): install `tools/capture-bookmarklet.js` as a bookmark; on a ShopGoodwill
-     item page you are viewing, click it. The page HTML is parsed locally and the item opens in OUTLIER.
+   - *Capture bookmarklet*: install `tools/capture-bookmarklet.js` as a bookmark; on a ShopGoodwill item page you
+     are viewing, click it. The page HTML is parsed locally (no model calls) and the item opens in OUTLIER. The
+     backend allows the `shopgoodwill.com` origin by default so the bookmarklet can read the response
+     (`OUTLIER_CORS_ORIGINS` to change). The page parser is best-effort until tuned on a real page (see Limitations).
    - *Import page*: save the item page (⌘S → "Webpage, HTML only") and upload it at `/import`.
    - *Manual form* at `/import`: title, URL, bid, shipping, handling, image URLs.
    - *Personal Shopper e-mail*: upload the `.eml` (or paste its HTML). Set `OUTLIER_IMAP_*` to poll your mailbox
@@ -69,14 +75,15 @@ backend/outlier
                        sgw_unofficial (off by default)
   services/listings.py normalization, dedupe (item id → URL → fingerprint), snapshots, image storage
   analysis/            schemas.py (validated structured outputs), prefilter (stage 1), prompts, images (resize/zoom),
-                       discrepancy detection, reference matching, pipeline (tiered, cached, budgeted)
+                       guards.py (code-enforced jewelry/designer safeguard on model output), discrepancy detection,
+                       reference matching, pipeline (tiered, cached, budgeted)
   providers/           VisionProvider interface; anthropic, gemini, demo adapters; registry; pricing; usage/budgets
   valuation/           engine.py (sold-only robust stats, scenarios, evidence grading); providers.py (eBay)
   finance/calc.py      deterministic acquisition/resale cost model, profit, ROI, break-even, max bid, sensitivity
   ranking/score.py     transparent weighted score + tiers (configurable heuristics)
   services/opportunity.py  valuation → finance → ranking recompute
   jobs/                durable DB-backed queue + worker thread (retries, resume on restart)
-  api/                 FastAPI routers (50 endpoints; OpenAPI at /docs)
+  api/                 FastAPI routers (~60 operations; OpenAPI at /docs)
   demo/                synthetic fixtures, seed reference entries
 frontend/              Next.js app: dashboard, item analysis + research workspace, watchlist, analytics,
                        settings, import, reference
@@ -116,7 +123,9 @@ of a separate queue service, because a single-user local app does not need Redis
 - **Structured, validated outputs** (`analysis/schemas.py`): observations vs candidates vs confirmed facts,
   confidence per candidate, evidence/counter-evidence, alternative explanations, missing information, research
   queries, value indicators, discrepancies. Jewelry materials are hypotheses with the verification needed; melt
-  value is never computed.
+  value is never computed. `analysis/guards.py` enforces this in code after every model call: 'confirmed'
+  precious-metal/designer candidates are demoted to 'inferred', untested material confidence is capped at 0.7,
+  any dollar melt value is removed and flagged, and overall confidence is capped at 0.95.
 - **Discrepancy detection** combines the model's findings with deterministic checks (labels transcribed but not
   mentioned by the seller; "silver tone" vs a 925 mark; maker named by the model but not the seller) into a
   confidence-discounted *possible misidentification* signal that raises research priority but not value.
@@ -139,6 +148,10 @@ of a separate queue service, because a single-user local app does not need Redis
 - Sold-price data is manual unless eBay grants Marketplace Insights access. Reference "typical" ranges are
   guidance, not comps.
 - Fee schedules in Settings are defaults as of 2026-10; verify them for your account/region.
+- Docker: `docker compose up` builds both images, but the compose stack could not be run in the build environment
+  (no Docker daemon); the native commands above are the verified path.
+- The max bid shown on the dashboard carries a `?` marker when a cost (usually incoming shipping) is unknown;
+  it was computed with that cost at $0 and the item page lists exactly which costs are missing.
 - Scores and risk adjustments are heuristics until enough outcomes exist to calibrate them.
 
 See `docs/research.md` for the integration research, legal notes and the review of `shopgoodwill-scripts`.

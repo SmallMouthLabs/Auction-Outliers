@@ -16,9 +16,9 @@ class CompIn(BaseModel):
     marketplace: str = "ebay"
     url: str | None = None
     sold_date: Any = None
-    price: float | None = None
+    price: float | None = Field(default=None, ge=0)
     shipping_included: bool | None = None
-    shipping_amount: float | None = None
+    shipping_amount: float | None = Field(default=None, ge=0)
     is_sold: bool = True
     accepted_offer: bool = False
     comp_type: str = "same_maker"

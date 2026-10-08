@@ -23,6 +23,7 @@ from ..providers.registry import build_provider
 from ..providers.usage import check_budget, record_usage
 from ..settings_store import get_all_settings
 from . import discrepancy, prompts
+from .guards import apply_guards
 from .images import make_zoom, prepare_inputs
 from .prefilter import run_prefilter
 from .reference_match import match_references
@@ -43,7 +44,9 @@ def _input_hash(l: Listing, stage: str, model: str) -> str:
     h.update(SCHEMA_VERSION.encode())
     h.update(stage.encode())
     h.update(model.encode())
-    h.update(json.dumps(_listing_dict(l), sort_keys=True, default=str).encode())
+    # volatile auction fields (bid, bid count) are excluded so price updates do not invalidate the cache
+    stable = {k: v for k, v in _listing_dict(l).items() if k not in ("current_bid", "num_bids")}
+    h.update(json.dumps(stable, sort_keys=True, default=str).encode())
     for im in l.images:
         h.update((im.sha256 or im.remote_url or "").encode())
     return h.hexdigest()
@@ -126,6 +129,8 @@ def _run_vision_stage(db: Session, l: Listing, stage: str, provider: VisionProvi
     if not provider.is_demo:
         record_usage(db, provider=provider.name, model=provider.model, stage=stage, listing_id=l.id, result=res)
     out = res.parsed.model_dump()
+    if schema is DeepResult:
+        out = apply_guards(out)
     out["_meta"] = {"zoom_calls": res.zoom_calls, "is_demo": res.is_demo, "provider": res.provider, "model": res.model}
     run = _save_run(db, l, stage, provider.name, provider.model, "succeeded", out, ih, res, is_demo=res.is_demo)
     return run, False
@@ -135,8 +140,9 @@ def stage_triage(db: Session, l: Listing, provider_name: str | None = None, mode
     provider = _provider_for(db, l, "triage", provider_name, model)
     s = get_settings()
     domain_hint = l.domain if l.domain in ("clothing", "jewelry") else "unknown"
-    run, _ = _run_vision_stage(db, l, "triage", provider, TriageResult, prompts.TRIAGE_SYSTEM,
-                               prompts.triage_prompt(_listing_dict(l), domain_hint), s.triage_image_max_px, 0, force)
+    run, cached = _run_vision_stage(db, l, "triage", provider, TriageResult, prompts.TRIAGE_SYSTEM,
+                                    prompts.triage_prompt(_listing_dict(l), domain_hint), s.triage_image_max_px, 0, force)
+    run.cached = cached  # transient attribute for the summary
     out = run.output
     if l.domain not in ("clothing", "jewelry") and out.get("domain") in ("clothing", "jewelry"):
         l.domain = out["domain"]
@@ -156,6 +162,7 @@ def stage_deep(db: Session, l: Listing, provider_name: str | None = None, model:
     run, cached = _run_vision_stage(db, l, "deep", provider, DeepResult, prompts.DEEP_SYSTEM,
                                     prompts.deep_prompt(_listing_dict(l), domain, triage_output, refs),
                                     s.deep_image_max_px, s.max_zoom_calls, force)
+    run.cached = cached
     out = dict(run.output)
     # post-processing: discrepancy signal + reference matches on the transcribed text
     deep_texts = texts + [o.get("text", "") for o in out.get("observed_facts", [])]
@@ -201,7 +208,7 @@ def analyze_listing(db: Session, l: Listing, *, mode: str = "auto", provider: st
     if mode in ("auto", "triage"):
         tr = stage_triage(db, l, provider, model, force)
         triage_out = tr.output
-        summary["stages"].append({"stage": "triage", "run_id": tr.id, "cached": tr.status == "cached",
+        summary["stages"].append({"stage": "triage", "run_id": tr.id, "cached": bool(getattr(tr, "cached", False)),
                                   "interest_score": triage_out.get("interest_score"), "escalate": triage_out.get("escalate")})
         if mode == "triage":
             return summary
@@ -214,6 +221,6 @@ def analyze_listing(db: Session, l: Listing, *, mode: str = "auto", provider: st
                                               AnalysisRun.status == "succeeded").order_by(AnalysisRun.id.desc()).first()
         triage_out = last_tr.output if last_tr else None
     deep = stage_deep(db, l, provider, model, force, triage_out)
-    summary["stages"].append({"stage": "deep", "run_id": deep.id, "headline": deep.output.get("headline_identification"),
+    summary["stages"].append({"stage": "deep", "run_id": deep.id, "cached": bool(getattr(deep, "cached", False)), "headline": deep.output.get("headline_identification"),
                               "confidence": deep.output.get("overall_confidence")})
     return summary

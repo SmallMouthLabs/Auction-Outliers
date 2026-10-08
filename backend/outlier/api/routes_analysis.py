@@ -11,7 +11,7 @@ from ..analysis.reference_match import match_references
 from ..db import get_db
 from ..jobs.queue import enqueue
 from ..models import Identification, Listing
-from ..providers.base import ProviderError, ProviderNotConfigured
+from ..providers.base import BudgetExceeded, ProviderError, ProviderNotConfigured
 from ..services.opportunity import recompute_opportunity
 from .serializers import identification_out, listing_detail, run_out
 
@@ -41,7 +41,7 @@ def analyze(listing_id: int, data: AnalyzeIn, db: Session = Depends(get_db)):
         return {"job_id": job.id, "status": job.status}
     try:
         summary = analyze_listing(db, l, mode=data.mode, provider=data.provider, model=data.model, force=data.force)
-    except ProviderNotConfigured:
+    except (ProviderNotConfigured, BudgetExceeded):
         raise
     except ProviderError as e:
         db.commit()  # keep the failed run / usage rows

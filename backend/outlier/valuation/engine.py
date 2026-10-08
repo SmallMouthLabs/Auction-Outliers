@@ -72,8 +72,10 @@ class ValuationResult:
 
 def classify_comp(comp: CompInput) -> str:
     """Guard: a comp that is not sold is always 'active', regardless of what was entered."""
-    if not comp.is_sold or comp.price is None:
-        return "active" if not comp.is_sold else "unsupported"
+    if not comp.is_sold or comp.comp_type == "active":
+        return "active"
+    if comp.price is None:
+        return "unsupported"
     if comp.comp_type in ("exact", "same_maker", "category"):
         return comp.comp_type
     return "category"

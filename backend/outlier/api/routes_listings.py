@@ -5,7 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from fastapi.responses import FileResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
@@ -107,6 +107,8 @@ async def import_page(file: UploadFile | None = File(default=None), html: str | 
     if not html:
         raise HTTPException(400, "provide an html file or html text")
     li = parse_item_page(html, url)
+    if li.title == "Untitled listing" and not li.image_urls and li.current_bid is None and not li.source_item_id:
+        raise HTTPException(400, "Could not find a listing in that HTML (no title, price, item id or images).")
     res = _ingest(db, [li], fetch_images, analyze)
     return {**res, "errors": [], "parsed": li.model_dump(mode="json")}
 
@@ -161,39 +163,57 @@ def get_listing(listing_id: int, db: Session = Depends(get_db)):
 
 
 class ListingPatch(BaseModel):
-    title: str | None = None
+    title: str | None = Field(default=None, min_length=1, max_length=500)
     description: str | None = None
     category: str | None = None
     seller: str | None = None
-    domain: str | None = None
+    domain: str | None = Field(default=None, pattern="^(clothing|jewelry|other|unknown)$")
     condition_text: str | None = None
     measurements: dict[str, Any] | None = None
     other_costs: dict[str, float] | None = None
     assumptions: dict[str, Any] | None = None
     user_notes: str | None = None
     archived: bool | None = None
-    status: str | None = None
-    source_url: str | None = None
+    status: str | None = Field(default=None, pattern="^(active|ended|unknown)$")
+    source_url: str | None = Field(default=None, pattern="^https?://")
+
+    @field_validator("title", mode="before")
+    @classmethod
+    def _strip(cls, v):
+        return v.strip() if isinstance(v, str) else v
+
+    @field_validator("other_costs")
+    @classmethod
+    def _nonneg(cls, v):
+        if v and any(x < 0 for x in v.values()):
+            raise ValueError("other_costs must be >= 0")
+        return v
+
 
 
 @router.patch("/{listing_id}")
 def patch_listing(listing_id: int, patch: ListingPatch, db: Session = Depends(get_db)):
     l = _get(db, listing_id)
-    for k, v in patch.model_dump(exclude_unset=True).items():
-        if k == "domain" and v not in ("clothing", "jewelry", "other", "unknown"):
-            raise HTTPException(400, "invalid domain")
+    data = patch.model_dump(exclude_unset=True)
+    if "title" in data and data["title"] is None:
+        raise HTTPException(400, "title cannot be null")
+    if "assumptions" in data:
+        from ..finance.overrides import validate_overrides
+
+        data["assumptions"] = validate_overrides(data["assumptions"]) if data["assumptions"] else {}
+    for k, v in data.items():
         setattr(l, k, v)
     recompute_opportunity(db, l)
     return listing_detail(l)
 
 
 class SnapshotIn(BaseModel):
-    current_bid: float | None = None
-    num_bids: int | None = None
+    current_bid: float | None = Field(default=None, ge=0)
+    num_bids: int | None = Field(default=None, ge=0)
     ends_at: datetime | None = None
-    shipping_cost: float | None = None
-    handling_fee: float | None = None
-    status: str | None = None
+    shipping_cost: float | None = Field(default=None, ge=0)
+    handling_fee: float | None = Field(default=None, ge=0)
+    status: str | None = Field(default=None, pattern="^(active|ended|unknown)$")
     source: str = "manual"
 
 

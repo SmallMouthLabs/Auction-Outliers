@@ -70,6 +70,8 @@ def build_provider(stage: str, requested: str | None = None, model: str | None =
         from .demo_provider import DemoProvider
 
         return DemoProvider(demo_fixtures)
+    if name not in ("anthropic", "gemini"):
+        raise ProviderNotConfigured(f"Unknown provider '{name}'. Use anthropic, gemini, demo or auto.")
     model = model or (settings.triage_model if stage == "triage" else settings.deep_model) or DEFAULT_MODELS[(name, stage)]
     if name == "anthropic":
         if not secrets.anthropic_api_key:

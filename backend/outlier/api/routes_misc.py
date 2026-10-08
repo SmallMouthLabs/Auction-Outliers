@@ -105,9 +105,9 @@ def recompute(db: Session = Depends(get_db)):
 
 # ----------------------------------------------------------------------------- watchlist
 class WatchIn(BaseModel):
-    status: str | None = None
-    user_max_bid: float | None = None
-    remind_minutes_before_end: int | None = None
+    status: str | None = Field(default=None, pattern="^(watching|bidding|won|lost|passed|archived)$")
+    user_max_bid: float | None = Field(default=None, ge=0)
+    remind_minutes_before_end: int | None = Field(default=None, ge=0)
     notes: str | None = None
     archived: bool | None = None
 
@@ -236,12 +236,12 @@ def patch_note(listing_id: int, note_id: int, data: NotePatch, db: Session = Dep
 
 class OutcomeIn(BaseModel):
     purchased: bool | None = None
-    purchase_price: float | None = None
-    acquisition_expenses: float | None = None
+    purchase_price: float | None = Field(default=None, ge=0)
+    acquisition_expenses: float | None = Field(default=None, ge=0)
     purchased_at: datetime | None = None
     sold: bool | None = None
-    resale_price: float | None = None
-    selling_fees: float | None = None
+    resale_price: float | None = Field(default=None, ge=0)
+    selling_fees: float | None = Field(default=None, ge=0)
     resale_platform: str | None = None
     sold_at: datetime | None = None
     notes: str | None = None
@@ -267,19 +267,19 @@ def upsert_outcome(listing_id: int, data: OutcomeIn, db: Session = Depends(get_d
 
 # ----------------------------------------------------------------------------- reference database
 class ReferenceIn(BaseModel):
-    name: str
-    entry_type: str = "brand"
-    domain: str = "clothing"
+    name: str = Field(min_length=1, max_length=200)
+    entry_type: str = Field(default="brand", pattern="^(brand|designer|product|characteristic|maker_mark)$")
+    domain: str = Field(default="clothing", pattern="^(clothing|jewelry|both)$")
     category: str | None = None
     characteristics: str | None = None
     identifiers: list[str] = Field(default_factory=list)
     keywords: list[str] = Field(default_factory=list)
     reference_image_urls: list[str] = Field(default_factory=list)
     price_evidence: list[dict[str, Any]] = Field(default_factory=list)
-    typical_low: float | None = None
-    typical_high: float | None = None
-    demand: str = "medium"
-    liquidity: str = "medium"
+    typical_low: float | None = Field(default=None, ge=0)
+    typical_high: float | None = Field(default=None, ge=0)
+    demand: str = Field(default="medium", pattern="^(high|medium|low)$")
+    liquidity: str = Field(default="medium", pattern="^(high|medium|low)$")
     id_confidence_notes: str | None = None
     source: str = "user"
 

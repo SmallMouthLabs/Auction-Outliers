@@ -188,10 +188,29 @@ def get_setting(db: Session, key: str) -> Any:
     return get_all_settings(db).get(key)
 
 
+def validate_merged(merged: dict[str, Any]) -> None:
+    from .settings_schema import SettingsModel
+
+    try:
+        SettingsModel.model_validate(merged).check()
+    except ValueError as e:
+        raise ValueError(f"invalid settings: {e}") from e
+
+
 def update_settings(db: Session, patch: dict[str, Any]) -> dict[str, Any]:
-    for key, value in patch.items():
+    for key in patch:
         if key not in DEFAULT_SETTINGS:
             raise ValueError(f"Unknown settings key: {key}")
+    # validate the result of applying the patch before persisting anything
+    current = get_all_settings(db)
+    candidate = copy.deepcopy(current)
+    for key, value in patch.items():
+        if isinstance(value, dict) and isinstance(candidate.get(key), dict):
+            candidate[key] = _deep_merge(candidate[key], value)
+        else:
+            candidate[key] = value
+    validate_merged(candidate)
+    for key, value in patch.items():
         row = db.get(Setting, key)
         if row is None:
             row = Setting(key=key, value=value)
