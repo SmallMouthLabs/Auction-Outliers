@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import logging
 import threading
+import time
 import traceback
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
@@ -115,10 +116,27 @@ def process_pending(limit: int = 50) -> int:
 
 
 class Worker:
+    """Polls the job table and also enqueues periodic housekeeping jobs (reminders, optional e-mail polling)."""
+
     def __init__(self, poll_seconds: float = 2.0):
         self.poll = poll_seconds
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
+        self._last_periodic: dict[str, float] = {}
+
+    def _periodic(self) -> None:
+        from ..config import get_secrets, get_settings
+
+        now = time.time()
+        s = get_settings()
+        schedule = {"watchlist_reminders": 300.0}
+        if s.imap_host and s.imap_user and get_secrets().imap_password:
+            schedule["poll_email"] = 900.0
+        for job_type, every in schedule.items():
+            if now - self._last_periodic.get(job_type, 0.0) >= every:
+                self._last_periodic[job_type] = now
+                with session_scope() as db:
+                    enqueue(db, job_type, max_attempts=1)
 
     def start(self) -> None:
         with session_scope() as db:
@@ -134,6 +152,7 @@ class Worker:
     def _loop(self) -> None:
         while not self._stop.is_set():
             try:
+                self._periodic()
                 n = process_pending(limit=5)
             except Exception:
                 log.exception("worker loop error")
