@@ -379,3 +379,21 @@ def test_demo_clear(client, demo):
     assert r.json()["removed"] == 7
     assert client.get("/api/status").json()["counts"]["demo_listings"] == 0
     assert client.post("/api/demo/run").status_code == 200
+
+
+def test_notes_create_and_patch(client, demo):
+    lid = client.get("/api/listings?limit=1").json()["items"][0]["id"]
+    r = client.post(f"/api/listings/{lid}/notes", json={"text": "check sleeve length", "flagged": True})
+    assert r.status_code == 201, r.text
+    n = r.json()["notes"][0]
+    assert n["text"] == "check sleeve length" and n["flagged"] is True
+    r = client.patch(f"/api/listings/{lid}/notes/{n['id']}", json={"resolved": True})
+    assert r.status_code == 200 and r.json()["notes"][0]["resolved"] is True
+
+
+def test_settings_put_returns_full_payload(client):
+    r = client.put("/api/settings", json={"default_platform": "etsy"})
+    assert r.status_code == 200
+    assert set(r.json()) >= {"settings", "defaults", "env", "credentials_configured", "feedback_labels"}
+    assert r.json()["settings"]["default_platform"] == "etsy"
+    client.post("/api/settings/reset")

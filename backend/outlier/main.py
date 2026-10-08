@@ -61,6 +61,11 @@ def create_app(run_worker: bool | None = None) -> FastAPI:
     async def _value(_: Request, exc: ValueError):
         return JSONResponse(status_code=400, content={"detail": str(exc)})
 
+    @app.exception_handler(Exception)
+    async def _unhandled(_: Request, exc: Exception):
+        log.exception("unhandled error: %s", exc)
+        return JSONResponse(status_code=500, content={"detail": f"internal error: {type(exc).__name__}: {str(exc)[:300]}", "code": "internal_error"})
+
     return app
 
 

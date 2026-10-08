@@ -212,6 +212,7 @@ def add_note(listing_id: int, data: NoteIn, db: Session = Depends(get_db)):
     n = ResearchNote(listing_id=l.id, text=data.text, flagged=data.flagged)
     db.add(n)
     l.notes.append(n)
+    db.flush()
     return listing_detail(l)
 
 
@@ -229,6 +230,7 @@ def patch_note(listing_id: int, note_id: int, data: NotePatch, db: Session = Dep
         raise HTTPException(404, "note not found")
     for k, v in data.model_dump(exclude_unset=True).items():
         setattr(n, k, v)
+    db.flush()
     return listing_detail(l)
 
 
@@ -328,8 +330,7 @@ def seed_reference(db: Session = Depends(get_db)):
 
 
 # ----------------------------------------------------------------------------- settings
-@router.get("/settings")
-def get_settings_api(db: Session = Depends(get_db)):
+def _settings_payload(db: Session) -> dict[str, Any]:
     s = get_settings()
     return {
         "settings": get_all_settings(db), "defaults": DEFAULT_SETTINGS,
@@ -344,21 +345,26 @@ def get_settings_api(db: Session = Depends(get_db)):
     }
 
 
+@router.get("/settings")
+def get_settings_api(db: Session = Depends(get_db)):
+    return _settings_payload(db)
+
+
 @router.put("/settings")
 def put_settings(patch: dict[str, Any], db: Session = Depends(get_db)):
     try:
-        out = update_settings(db, patch)
+        update_settings(db, patch)
     except ValueError as e:
         raise HTTPException(400, str(e)) from e
     recompute_all(db)
-    return {"settings": out}
+    return _settings_payload(db)
 
 
 @router.post("/settings/reset")
 def reset_settings_api(db: Session = Depends(get_db)):
-    out = reset_settings(db)
+    reset_settings(db)
     recompute_all(db)
-    return {"settings": out}
+    return _settings_payload(db)
 
 
 # ----------------------------------------------------------------------------- analytics
