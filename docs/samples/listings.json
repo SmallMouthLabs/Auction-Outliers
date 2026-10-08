@@ -1,0 +1,16 @@
+{
+  "listings": [
+    {
+      "source_url": "https://shopgoodwill.com/item/300000001",
+      "title": "Mens Brown Work Jacket XL",
+      "description": "Brown canvas jacket with blanket lining.",
+      "category": "Clothing > Men's > Coats & Jackets",
+      "current_bid": 24.0,
+      "num_bids": 4,
+      "ends_at": "2026-10-25T19:00:00-07:00",
+      "shipping_cost": 16.95,
+      "handling_fee": 1.0,
+      "image_urls": ["https://example.com/photos/3a.jpg", "https://example.com/photos/3b.jpg"]
+    }
+  ]
+}

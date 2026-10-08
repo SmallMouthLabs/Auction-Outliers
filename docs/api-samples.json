@@ -1,0 +1,2271 @@
+{
+ "GET /api/status": {
+  "version": "0.1.0",
+  "components": {
+   "ai_triage": {
+    "state": "needs_config",
+    "detail": "Gemini Flash or Claude Haiku; set GEMINI_API_KEY or ANTHROPIC_API_KEY"
+   },
+   "ai_deep": {
+    "state": "needs_config",
+    "detail": "Claude Opus 5.5 (preferred) or Gemini Pro; set ANTHROPIC_API_KEY or GEMINI_API_KEY"
+   },
+   "demo_mode": {
+    "state": "available",
+    "detail": "7 demo listings loaded (synthetic fixtures)"
+   },
+   "ingest_manual": {
+    "state": "live",
+    "detail": "manual form, JSON, CSV, saved page HTML, photo upload"
+   },
+   "ingest_email": {
+    "state": "needs_config",
+    "detail": "Personal Shopper e-mails: .eml upload works now; IMAP polling needs OUTLIER_IMAP_* settings"
+   },
+   "ingest_sgw_unofficial": {
+    "state": "disabled",
+    "detail": "unofficial buyer API adapter (off by default; see docs/research.md)"
+   },
+   "sold_data_manual": {
+    "state": "live",
+    "detail": "manual / CSV / JSON comparable entry"
+   },
+   "sold_data_ebay_insights": {
+    "state": "needs_config",
+    "detail": "eBay Marketplace Insights (limited release; needs eBay approval)"
+   },
+   "active_data_ebay_browse": {
+    "state": "needs_config",
+    "detail": "eBay Browse (active listings only)"
+   },
+   "webhooks": {
+    "state": "needs_config",
+    "detail": "set OUTLIER_WEBHOOK_TOKEN to enable /api/webhooks/* for n8n"
+   },
+   "worker": {
+    "state": "live",
+    "detail": "background job worker"
+   }
+  },
+  "providers": [
+   {
+    "provider": "anthropic",
+    "configured": false,
+    "triage_model": "claude-haiku-5-5",
+    "deep_model": "claude-opus-5-5",
+    "note": "set ANTHROPIC_API_KEY to enable"
+   },
+   {
+    "provider": "gemini",
+    "configured": false,
+    "triage_model": "gemini-2.5-flash",
+    "deep_model": "gemini-2.5-pro",
+    "note": "set GEMINI_API_KEY to enable"
+   },
+   {
+    "provider": "demo",
+    "configured": true,
+    "triage_model": "demo-fixtures",
+    "deep_model": "demo-fixtures",
+    "note": "canned fixture outputs for demo listings only"
+   }
+  ],
+  "sold_data_providers": [
+   {
+    "name": "manual_entry",
+    "sold_data": true,
+    "available": true,
+    "note": "manual / CSV / JSON comparable entry (always on)"
+   },
+   {
+    "name": "ebay_marketplace_insights",
+    "sold_data": true,
+    "available": false,
+    "note": "requires EBAY_CLIENT_ID/EBAY_CLIENT_SECRET and eBay approval for the Marketplace Insights API (limited release)"
+   },
+   {
+    "name": "ebay_browse_active",
+    "sold_data": false,
+    "available": false,
+    "note": "requires EBAY_CLIENT_ID/EBAY_CLIENT_SECRET (any eBay developer account)"
+   }
+  ],
+  "counts": {
+   "demo_listings": 7,
+   "live_listings": 0
+  },
+  "budget": {
+   "daily_budget_usd": 5.0,
+   "per_listing_budget_usd": 0.5
+  }
+ },
+ "GET /api/listings?sort=score (item 0 only)": {
+  "id": 1,
+  "source": "demo",
+  "source_item_id": "demo-mohair_cardigan",
+  "source_url": null,
+  "extraction_method": "demo_fixture",
+  "is_demo": true,
+  "title": "Vintage Wool Sweater Womens Medium",
+  "category": "Clothing > Women's > Sweaters",
+  "seller": "Goodwill of Demo County (synthetic)",
+  "domain": "clothing",
+  "current_bid": 12.0,
+  "num_bids": 2,
+  "buy_now_price": null,
+  "ends_at": "2026-10-09T12:01:28.498913",
+  "shipping_cost": 11.95,
+  "handling_fee": 1.0,
+  "status": "active",
+  "archived": false,
+  "first_seen_at": "2026-10-08T06:01:28.749226",
+  "last_updated_at": "2026-10-08T06:01:28.749226",
+  "last_verified_at": "2026-10-08T06:01:28.749226",
+  "image_count": 4,
+  "thumbnail": {
+   "id": 1,
+   "position": 0,
+   "remote_url": null,
+   "url": "/api/images/1",
+   "sha256": "61775aa42e62b7beeb479fe09a51e38403a47966a3161607a0361f0afb0497c2",
+   "width": 900,
+   "height": 900,
+   "fetch_error": null,
+   "is_demo": true
+  },
+  "identification": {
+   "summary": "1980s Kingstone Designs 75% mohair shawl-collar cardigan, made in England",
+   "confidence": 0.82,
+   "origin": "demo",
+   "domain": "clothing",
+   "warrants_research": true,
+   "misidentification_signal": 0.817,
+   "is_demo": true
+  },
+  "valuation": {
+   "conservative": 125.0,
+   "expected": 148.0,
+   "optimistic": 170.0,
+   "evidence_quality": "high",
+   "is_speculative": false,
+   "n_sold_comps": 3,
+   "method": "sold_comps"
+  },
+  "opportunity": {
+   "score": 93.7,
+   "tier": "HIGH_CONFIDENCE",
+   "components": {
+    "score": 93.7,
+    "tier": "HIGH_CONFIDENCE",
+    "components": {
+     "expected_profit": 0.604,
+     "risk_adjusted_profit": 0.546,
+     "roi": 0.975,
+     "identification_confidence": 0.82,
+     "evidence_quality": 1.0,
+     "sell_likelihood": 1.0,
+     "time_to_sell": 1.0,
+     "competition": 0.714,
+     "risk_flags": 1.0,
+     "misidentification_signal": 0.817
+    },
+    "weights": {
+     "expected_profit": 0.22,
+     "risk_adjusted_profit": 0.18,
+     "roi": 0.1,
+     "identification_confidence": 0.12,
+     "evidence_quality": 0.12,
+     "sell_likelihood": 0.08,
+     "time_to_sell": 0.04,
+     "competition": 0.04,
+     "risk_flags": 0.05,
+     "misidentification_signal": 0.05
+    },
+    "time_factor": 1.0,
+    "hours_left": 30.0,
+    "feedback_adjustment": 0.15,
+    "label": "heuristic weights, uncalibrated"
+   },
+   "finance": {
+    "expected_profit": 92.54,
+    "expected_roi_pct": 370.9,
+    "max_bid": 65.0,
+    "break_even_bid": 104.54,
+    "risk_adjusted_profit": 79.05,
+    "complete": true,
+    "unknown_costs": [],
+    "resale_low": 125.0,
+    "resale_expected": 148.0,
+    "resale_high": 170.0,
+    "evidence_quality": "high",
+    "is_speculative": false,
+    "platform": "ebay",
+    "over_max_bid": false
+   },
+   "computed_at": "2026-10-08T06:01:29.903584"
+  },
+  "watchlist": {
+   "id": 1,
+   "listing_id": 1,
+   "status": "watching",
+   "user_max_bid": 60.0,
+   "remind_minutes_before_end": 30,
+   "reminder_sent_at": null,
+   "notes": null,
+   "archived": false,
+   "created_at": "2026-10-08T06:01:29.974414",
+   "updated_at": "2026-10-08T06:01:29.974417"
+  },
+  "feedback_labels": [
+   "excellent_find"
+  ]
+ },
+ "GET /api/listings/1": {
+  "id": 1,
+  "source": "demo",
+  "source_item_id": "demo-mohair_cardigan",
+  "source_url": null,
+  "extraction_method": "demo_fixture",
+  "is_demo": true,
+  "title": "Vintage Wool Sweater Womens Medium",
+  "category": "Clothing > Women's > Sweaters",
+  "seller": "Goodwill of Demo County (synthetic)",
+  "domain": "clothing",
+  "current_bid": 12.0,
+  "num_bids": 2,
+  "buy_now_price": null,
+  "ends_at": "2026-10-09T12:01:28.498913",
+  "shipping_cost": 11.95,
+  "handling_fee": 1.0,
+  "status": "active",
+  "archived": false,
+  "first_seen_at": "2026-10-08T06:01:28.749226",
+  "last_updated_at": "2026-10-08T06:01:28.749226",
+  "last_verified_at": "2026-10-08T06:01:28.749226",
+  "image_count": 4,
+  "thumbnail": {
+   "id": 1,
+   "position": 0,
+   "remote_url": null,
+   "url": "/api/images/1",
+   "sha256": "61775aa42e62b7beeb479fe09a51e38403a47966a3161607a0361f0afb0497c2",
+   "width": 900,
+   "height": 900,
+   "fetch_error": null,
+   "is_demo": true
+  },
+  "identification": {
+   "summary": "1980s Kingstone Designs 75% mohair shawl-collar cardigan, made in England",
+   "confidence": 0.82,
+   "origin": "demo",
+   "domain": "clothing",
+   "warrants_research": true,
+   "misidentification_signal": 0.817,
+   "is_demo": true
+  },
+  "valuation": {
+   "conservative": 125.0,
+   "expected": 148.0,
+   "optimistic": 170.0,
+   "evidence_quality": "high",
+   "is_speculative": false,
+   "n_sold_comps": 3,
+   "method": "sold_comps"
+  },
+  "opportunity": {
+   "score": 93.7,
+   "tier": "HIGH_CONFIDENCE",
+   "components": {
+    "score": 93.7,
+    "tier": "HIGH_CONFIDENCE",
+    "components": {
+     "expected_profit": 0.604,
+     "risk_adjusted_profit": 0.546,
+     "roi": 0.975,
+     "identification_confidence": 0.82,
+     "evidence_quality": 1.0,
+     "sell_likelihood": 1.0,
+     "time_to_sell": 1.0,
+     "competition": 0.714,
+     "risk_flags": 1.0,
+     "misidentification_signal": 0.817
+    },
+    "weights": {
+     "expected_profit": 0.22,
+     "risk_adjusted_profit": 0.18,
+     "roi": 0.1,
+     "identification_confidence": 0.12,
+     "evidence_quality": 0.12,
+     "sell_likelihood": 0.08,
+     "time_to_sell": 0.04,
+     "competition": 0.04,
+     "risk_flags": 0.05,
+     "misidentification_signal": 0.05
+    },
+    "time_factor": 1.0,
+    "hours_left": 30.0,
+    "feedback_adjustment": 0.15,
+    "label": "heuristic weights, uncalibrated"
+   },
+   "finance": {
+    "expected_profit": 92.54,
+    "expected_roi_pct": 370.9,
+    "max_bid": 65.0,
+    "break_even_bid": 104.54,
+    "risk_adjusted_profit": 79.05,
+    "complete": true,
+    "unknown_costs": [],
+    "resale_low": 125.0,
+    "resale_expected": 148.0,
+    "resale_high": 170.0,
+    "evidence_quality": "high",
+    "is_speculative": false,
+    "platform": "ebay",
+    "over_max_bid": false
+   },
+   "computed_at": "2026-10-08T06:01:29.903584"
+  },
+  "watchlist": {
+   "id": 1,
+   "listing_id": 1,
+   "status": "watching",
+   "user_max_bid": 60.0,
+   "remind_minutes_before_end": 30,
+   "reminder_sent_at": null,
+   "notes": null,
+   "archived": false,
+   "created_at": "2026-10-08T06:01:29.974414",
+   "updated_at": "2026-10-08T06:01:29.974417"
+  },
+  "feedback_labels": [
+   "excellent_find"
+  ],
+  "description": "Vintage sweater, wool, button front. Some wear. Measures 20 inches pit to pit, 24 inches long.",
+  "other_costs": {},
+  "measurements": {
+   "pit_to_pit_in": 20,
+   "length_in": 24
+  },
+  "condition_text": "Pre-owned, some wear.",
+  "assumptions": {},
+  "user_notes": null,
+  "raw": {
+   "demo_fixture_key": "mohair_cardigan"
+  },
+  "images": [
+   {
+    "id": 1,
+    "position": 0,
+    "remote_url": null,
+    "url": "/api/images/1",
+    "sha256": "61775aa42e62b7beeb479fe09a51e38403a47966a3161607a0361f0afb0497c2",
+    "width": 900,
+    "height": 900,
+    "fetch_error": null,
+    "is_demo": true
+   },
+   {
+    "id": 2,
+    "position": 1,
+    "remote_url": null,
+    "url": "/api/images/2",
+    "sha256": "625b5935e0856b8f01d3de7e7c2819980e1c8d5b3a7ec480859fd770355ec799",
+    "width": 900,
+    "height": 900,
+    "fetch_error": null,
+    "is_demo": true
+   },
+   {
+    "id": 3,
+    "position": 2,
+    "remote_url": null,
+    "url": "/api/images/3",
+    "sha256": "82477a379dc805e6f42a71f2e918524acb8e06c861eeb78f894bf869ca8cfbc3",
+    "width": 900,
+    "height": 900,
+    "fetch_error": null,
+    "is_demo": true
+   },
+   {
+    "id": 4,
+    "position": 3,
+    "remote_url": null,
+    "url": "/api/images/4",
+    "sha256": "5008c7668369bb25edd3ac38ee199bf1551ac506fa26a664e0f99383084cd74d",
+    "width": 900,
+    "height": 900,
+    "fetch_error": null,
+    "is_demo": true
+   }
+  ],
+  "snapshots": [
+   {
+    "id": 1,
+    "captured_at": "2026-10-08T06:01:28.752386",
+    "source": "demo",
+    "current_bid": 12.0,
+    "num_bids": 2,
+    "ends_at": "2026-10-09T12:01:28.498913",
+    "shipping_cost": 11.95,
+    "status": "active"
+   }
+  ],
+  "identification_full": {
+   "id": 1,
+   "origin": "demo",
+   "run_id": 3,
+   "domain": "clothing",
+   "summary": "1980s Kingstone Designs 75% mohair shawl-collar cardigan, made in England",
+   "confidence": 0.82,
+   "data": {
+    "domain": "clothing",
+    "headline_identification": "1980s Kingstone Designs 75% mohair shawl-collar cardigan, made in England",
+    "overall_confidence": 0.82,
+    "observed_facts": [
+     {
+      "text": "Brushed long-pile knit with visible halo",
+      "image_index": 0,
+      "region": "body"
+     },
+     {
+      "text": "Woven label reads KINGSTONE DESIGNS",
+      "image_index": 2,
+      "region": "neck label"
+     },
+     {
+      "text": "Care label: 75% MOHAIR 25% WOOL MADE IN ENGLAND",
+      "image_index": 3,
+      "region": "care label"
+     },
+     {
+      "text": "Shawl collar, five buttons",
+      "image_index": 0,
+      "region": null
+     }
+    ],
+    "candidates": [
+     {
+      "label": "Kingstone Designs mohair cardigan, 1980s",
+      "brand_or_maker": "Kingstone Designs",
+      "confidence": 0.82,
+      "evidence": [
+       "brand label legible",
+       "fibre label",
+       "construction consistent with 80s English mohair knits"
+      ],
+      "counter_evidence": [],
+      "status": "observed"
+     },
+     {
+      "label": "Unbranded English mohair blend, later reproduction label",
+      "brand_or_maker": null,
+      "confidence": 0.1,
+      "evidence": [
+       "none"
+      ],
+      "counter_evidence": [
+       "label style consistent with period"
+      ],
+      "status": "inferred"
+     }
+    ],
+    "alternative_explanations": [
+     "Label could be transplanted (unlikely; stitching matches)."
+    ],
+    "clothing": {
+     "garment_type": "cardigan",
+     "brand_or_manufacturer": "Kingstone Designs",
+     "brand_confidence": 0.85,
+     "label_texts": [
+      {
+       "text": "KINGSTONE DESIGNS",
+       "label_type": "brand label",
+       "image_index": 2,
+       "legibility": "clear"
+      },
+      {
+       "text": "75% MOHAIR 25% WOOL MADE IN ENGLAND",
+       "label_type": "care label",
+       "image_index": 3,
+       "legibility": "clear"
+      }
+     ],
+     "era_estimate": "1980s",
+     "era_evidence": [
+      "label typography",
+      "shawl collar silhouette"
+     ],
+     "fabric_and_construction": [
+      "75% mohair / 25% wool brushed knit"
+     ],
+     "stitching_and_seams": [
+      "linked seams"
+     ],
+     "country_of_manufacture": "England",
+     "country_evidence": "care label",
+     "graphics_or_prints": null,
+     "model_names_or_numbers": [],
+     "size_and_measurements": "~M (20in p2p, 24in length)",
+     "collectible_characteristics": [
+      "high mohair content",
+      "English maker"
+     ],
+     "authenticity_indicators": [
+      "period-correct woven label"
+     ],
+     "expert_inspection_points": [
+      "check for felting/pilling in hand"
+     ]
+    },
+    "jewelry": null,
+    "condition_issues": [
+     {
+      "issue": "general wear noted by seller",
+      "severity": "minor",
+      "image_index": null
+     }
+    ],
+    "value_indicators": [
+     {
+      "indicator": "75% mohair, made in England",
+      "why_it_matters": "Collector demand for high-mohair knits",
+      "strength": "strong"
+     }
+    ],
+    "discrepancies": [
+     {
+      "seller_claim": "'Vintage wool sweater'",
+      "visual_evidence": "Label: 75% mohair, named English maker",
+      "direction": "seller_undervalues",
+      "strength": "strong",
+      "image_index": 3
+     }
+    ],
+    "missing_information": [
+     "sleeve length",
+     "any holes/felting"
+    ],
+    "research_queries": [
+     {
+      "query": "Kingstone Designs mohair cardigan",
+      "marketplace": "ebay",
+      "purpose": "sold comps"
+     },
+     {
+      "query": "vintage 80s mohair cardigan made in England shawl collar",
+      "marketplace": "ebay",
+      "purpose": "sold comps"
+     }
+    ],
+    "warrants_further_research": true,
+    "research_rationale": "Named maker and premium fibre not reflected in title.",
+    "demand_indicator": "high",
+    "liquidity_indicator": "high",
+    "risk_flags": [],
+    "_meta": {
+     "zoom_calls": [],
+     "is_demo": true,
+     "provider": "demo",
+     "model": "demo-fixtures"
+    },
+    "reference_matches": [
+     {
+      "id": 7,
+      "name": "Mohair knitwear (English/Scottish 1980s)",
+      "entry_type": "characteristic",
+      "domain": "clothing",
+      "category": "knitwear",
+      "characteristics": "High mohair content (60%+), brushed halo; makers incl. Kingstone, Jaeger, Ballantyne.",
+      "identifiers": [
+       "mohair"
+      ],
+      "typical_low": 80.0,
+      "typical_high": 250.0,
+      "demand": "high",
+      "liquidity": "high",
+      "match_score": 6.0,
+      "hits": [
+       "identifier:mohair",
+       "kw:mohair",
+       "kw:kingstone"
+      ],
+      "is_demo": false
+     }
+    ]
+   },
+   "discrepancy": {
+    "signal": 0.817,
+    "raw_signal": 0.898,
+    "findings": [
+     {
+      "source": "model",
+      "seller_claim": "'Vintage wool sweater'",
+      "visual_evidence": "Label: 75% mohair, named English maker",
+      "strength": "strong",
+      "image_index": 3
+     },
+     {
+      "source": "rule",
+      "seller_claim": "Brand/manufacturer not named by seller",
+      "visual_evidence": "Label/construction suggests 'Kingstone Designs' (model confidence 0.85)",
+      "strength": "strong",
+      "image_index": null
+     }
+    ],
+    "note": "Discrepancies raise research priority; they do not establish value."
+   },
+   "warrants_research": true,
+   "is_current": true,
+   "is_demo": true,
+   "created_at": "2026-10-08T06:01:29.162756"
+  },
+  "identification_history": [
+   {
+    "id": 1,
+    "origin": "demo",
+    "run_id": 3,
+    "domain": "clothing",
+    "summary": "1980s Kingstone Designs 75% mohair shawl-collar cardigan, made in England",
+    "confidence": 0.82,
+    "data": {
+     "domain": "clothing",
+     "headline_identification": "1980s Kingstone Designs 75% mohair shawl-collar cardigan, made in England",
+     "overall_confidence": 0.82,
+     "observed_facts": [
+      {
+       "text": "Brushed long-pile knit with visible halo",
+       "image_index": 0,
+       "region": "body"
+      },
+      {
+       "text": "Woven label reads KINGSTONE DESIGNS",
+       "image_index": 2,
+       "region": "neck label"
+      },
+      {
+       "text": "Care label: 75% MOHAIR 25% WOOL MADE IN ENGLAND",
+       "image_index": 3,
+       "region": "care label"
+      },
+      {
+       "text": "Shawl collar, five buttons",
+       "image_index": 0,
+       "region": null
+      }
+     ],
+     "candidates": [
+      {
+       "label": "Kingstone Designs mohair cardigan, 1980s",
+       "brand_or_maker": "Kingstone Designs",
+       "confidence": 0.82,
+       "evidence": [
+        "brand label legible",
+        "fibre label",
+        "construction consistent with 80s English mohair knits"
+       ],
+       "counter_evidence": [],
+       "status": "observed"
+      },
+      {
+       "label": "Unbranded English mohair blend, later reproduction label",
+       "brand_or_maker": null,
+       "confidence": 0.1,
+       "evidence": [
+        "none"
+       ],
+       "counter_evidence": [
+        "label style consistent with period"
+       ],
+       "status": "inferred"
+      }
+     ],
+     "alternative_explanations": [
+      "Label could be transplanted (unlikely; stitching matches)."
+     ],
+     "clothing": {
+      "garment_type": "cardigan",
+      "brand_or_manufacturer": "Kingstone Designs",
+      "brand_confidence": 0.85,
+      "label_texts": [
+       {
+        "text": "KINGSTONE DESIGNS",
+        "label_type": "brand label",
+        "image_index": 2,
+        "legibility": "clear"
+       },
+       {
+        "text": "75% MOHAIR 25% WOOL MADE IN ENGLAND",
+        "label_type": "care label",
+        "image_index": 3,
+        "legibility": "clear"
+       }
+      ],
+      "era_estimate": "1980s",
+      "era_evidence": [
+       "label typography",
+       "shawl collar silhouette"
+      ],
+      "fabric_and_construction": [
+       "75% mohair / 25% wool brushed knit"
+      ],
+      "stitching_and_seams": [
+       "linked seams"
+      ],
+      "country_of_manufacture": "England",
+      "country_evidence": "care label",
+      "graphics_or_prints": null,
+      "model_names_or_numbers": [],
+      "size_and_measurements": "~M (20in p2p, 24in length)",
+      "collectible_characteristics": [
+       "high mohair content",
+       "English maker"
+      ],
+      "authenticity_indicators": [
+       "period-correct woven label"
+      ],
+      "expert_inspection_points": [
+       "check for felting/pilling in hand"
+      ]
+     },
+     "jewelry": null,
+     "condition_issues": [
+      {
+       "issue": "general wear noted by seller",
+       "severity": "minor",
+       "image_index": null
+      }
+     ],
+     "value_indicators": [
+      {
+       "indicator": "75% mohair, made in England",
+       "why_it_matters": "Collector demand for high-mohair knits",
+       "strength": "strong"
+      }
+     ],
+     "discrepancies": [
+      {
+       "seller_claim": "'Vintage wool sweater'",
+       "visual_evidence": "Label: 75% mohair, named English maker",
+       "direction": "seller_undervalues",
+       "strength": "strong",
+       "image_index": 3
+      }
+     ],
+     "missing_information": [
+      "sleeve length",
+      "any holes/felting"
+     ],
+     "research_queries": [
+      {
+       "query": "Kingstone Designs mohair cardigan",
+       "marketplace": "ebay",
+       "purpose": "sold comps"
+      },
+      {
+       "query": "vintage 80s mohair cardigan made in England shawl collar",
+       "marketplace": "ebay",
+       "purpose": "sold comps"
+      }
+     ],
+     "warrants_further_research": true,
+     "research_rationale": "Named maker and premium fibre not reflected in title.",
+     "demand_indicator": "high",
+     "liquidity_indicator": "high",
+     "risk_flags": [],
+     "_meta": {
+      "zoom_calls": [],
+      "is_demo": true,
+      "provider": "demo",
+      "model": "demo-fixtures"
+     },
+     "reference_matches": [
+      {
+       "id": 7,
+       "name": "Mohair knitwear (English/Scottish 1980s)",
+       "entry_type": "characteristic",
+       "domain": "clothing",
+       "category": "knitwear",
+       "characteristics": "High mohair content (60%+), brushed halo; makers incl. Kingstone, Jaeger, Ballantyne.",
+       "identifiers": [
+        "mohair"
+       ],
+       "typical_low": 80.0,
+       "typical_high": 250.0,
+       "demand": "high",
+       "liquidity": "high",
+       "match_score": 6.0,
+       "hits": [
+        "identifier:mohair",
+        "kw:mohair",
+        "kw:kingstone"
+       ],
+       "is_demo": false
+      }
+     ]
+    },
+    "discrepancy": {
+     "signal": 0.817,
+     "raw_signal": 0.898,
+     "findings": [
+      {
+       "source": "model",
+       "seller_claim": "'Vintage wool sweater'",
+       "visual_evidence": "Label: 75% mohair, named English maker",
+       "strength": "strong",
+       "image_index": 3
+      },
+      {
+       "source": "rule",
+       "seller_claim": "Brand/manufacturer not named by seller",
+       "visual_evidence": "Label/construction suggests 'Kingstone Designs' (model confidence 0.85)",
+       "strength": "strong",
+       "image_index": null
+      }
+     ],
+     "note": "Discrepancies raise research priority; they do not establish value."
+    },
+    "warrants_research": true,
+    "is_current": true,
+    "is_demo": true,
+    "created_at": "2026-10-08T06:01:29.162756"
+   }
+  ],
+  "valuation_full": {
+   "id": 15,
+   "method": "sold_comps",
+   "conservative": 125.0,
+   "expected": 148.0,
+   "optimistic": 170.0,
+   "is_speculative": false,
+   "evidence_quality": "high",
+   "n_sold_comps": 3,
+   "detail": {
+    "method": "sold_comps",
+    "conservative": 125.0,
+    "expected": 148.0,
+    "optimistic": 170.0,
+    "is_speculative": false,
+    "evidence_quality": "high",
+    "n_sold_comps": 3,
+    "used_comp_ids": [
+     1,
+     2,
+     3
+    ],
+    "excluded": [],
+    "active_listing_context": {
+     "n": 1,
+     "min_asking": 240.0,
+     "median_asking": 240.0,
+     "max_asking": 240.0,
+     "note": "Asking prices only. Not used in the valuation."
+    },
+    "notes": [],
+    "stats": {
+     "tier_used": "same_maker",
+     "avg_similarity": 0.83,
+     "weighted_median": 148.0,
+     "min": 125.0,
+     "max": 170.0,
+     "spread_ratio": 0.3
+    }
+   },
+   "created_at": "2026-10-08T06:01:29.901675"
+  },
+  "comparables": [
+   {
+    "id": 3,
+    "listing_id": 1,
+    "title": "Kingstone Designs vintage mohair cardigan (shawl collar)",
+    "marketplace": "ebay (synthetic)",
+    "url": "https://example.invalid/demo-comp-3",
+    "sold_date": "2026-07-30T06:01:28.803052",
+    "price": 170.0,
+    "shipping_included": false,
+    "shipping_amount": null,
+    "is_sold": true,
+    "accepted_offer": false,
+    "comp_type": "exact",
+    "similarity": 0.9,
+    "evidence_quality": "high",
+    "condition": null,
+    "differences": null,
+    "source": "demo",
+    "is_demo": true,
+    "created_at": "2026-10-08T06:01:28.804643"
+   },
+   {
+    "id": 1,
+    "listing_id": 1,
+    "title": "Vintage 80s Kingstone Designs Mohair Cardigan England M",
+    "marketplace": "ebay (synthetic)",
+    "url": "https://example.invalid/demo-comp-1",
+    "sold_date": "2026-09-18T06:01:28.802864",
+    "price": 148.0,
+    "shipping_included": false,
+    "shipping_amount": null,
+    "is_sold": true,
+    "accepted_offer": false,
+    "comp_type": "same_maker",
+    "similarity": 0.85,
+    "evidence_quality": "high",
+    "condition": null,
+    "differences": null,
+    "source": "demo",
+    "is_demo": true,
+    "created_at": "2026-10-08T06:01:28.804639"
+   },
+   {
+    "id": 2,
+    "listing_id": 1,
+    "title": "80s Fluffy Mohair Wool Cardigan Made in England Womens M",
+    "marketplace": "ebay (synthetic)",
+    "url": "https://example.invalid/demo-comp-2",
+    "sold_date": "2026-08-24T06:01:28.802993",
+    "price": 125.0,
+    "shipping_included": false,
+    "shipping_amount": null,
+    "is_sold": true,
+    "accepted_offer": false,
+    "comp_type": "same_maker",
+    "similarity": 0.75,
+    "evidence_quality": "high",
+    "condition": null,
+    "differences": null,
+    "source": "demo",
+    "is_demo": true,
+    "created_at": "2026-10-08T06:01:28.804642"
+   },
+   {
+    "id": 4,
+    "listing_id": 1,
+    "title": "Vintage mohair cardigan (asking)",
+    "marketplace": "ebay (synthetic)",
+    "url": "https://example.invalid/demo-active-1",
+    "sold_date": null,
+    "price": 240.0,
+    "shipping_included": false,
+    "shipping_amount": null,
+    "is_sold": false,
+    "accepted_offer": false,
+    "comp_type": "active",
+    "similarity": 0.8,
+    "evidence_quality": "low",
+    "condition": null,
+    "differences": null,
+    "source": "demo",
+    "is_demo": true,
+    "created_at": "2026-10-08T06:01:28.804644"
+   }
+  ],
+  "analysis_runs": [
+   {
+    "id": 3,
+    "stage": "deep",
+    "provider": "demo",
+    "model": "demo-fixtures",
+    "status": "succeeded",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "est_cost_usd": 0.0,
+    "duration_ms": 0,
+    "error": null,
+    "is_demo": true,
+    "created_at": "2026-10-08T06:01:29.159905",
+    "input_hash": "29a0df51f5efd8c7ff0cba59dfbb161dad3b0092a24a200ac5e2cf54998f6eb3",
+    "output": {
+     "domain": "clothing",
+     "headline_identification": "1980s Kingstone Designs 75% mohair shawl-collar cardigan, made in England",
+     "overall_confidence": 0.82,
+     "observed_facts": [
+      {
+       "text": "Brushed long-pile knit with visible halo",
+       "image_index": 0,
+       "region": "body"
+      },
+      {
+       "text": "Woven label reads KINGSTONE DESIGNS",
+       "image_index": 2,
+       "region": "neck label"
+      },
+      {
+       "text": "Care label: 75% MOHAIR 25% WOOL MADE IN ENGLAND",
+       "image_index": 3,
+       "region": "care label"
+      },
+      {
+       "text": "Shawl collar, five buttons",
+       "image_index": 0,
+       "region": null
+      }
+     ],
+     "candidates": [
+      {
+       "label": "Kingstone Designs mohair cardigan, 1980s",
+       "brand_or_maker": "Kingstone Designs",
+       "confidence": 0.82,
+       "evidence": [
+        "brand label legible",
+        "fibre label",
+        "construction consistent with 80s English mohair knits"
+       ],
+       "counter_evidence": [],
+       "status": "observed"
+      },
+      {
+       "label": "Unbranded English mohair blend, later reproduction label",
+       "brand_or_maker": null,
+       "confidence": 0.1,
+       "evidence": [
+        "none"
+       ],
+       "counter_evidence": [
+        "label style consistent with period"
+       ],
+       "status": "inferred"
+      }
+     ],
+     "alternative_explanations": [
+      "Label could be transplanted (unlikely; stitching matches)."
+     ],
+     "clothing": {
+      "garment_type": "cardigan",
+      "brand_or_manufacturer": "Kingstone Designs",
+      "brand_confidence": 0.85,
+      "label_texts": [
+       {
+        "text": "KINGSTONE DESIGNS",
+        "label_type": "brand label",
+        "image_index": 2,
+        "legibility": "clear"
+       },
+       {
+        "text": "75% MOHAIR 25% WOOL MADE IN ENGLAND",
+        "label_type": "care label",
+        "image_index": 3,
+        "legibility": "clear"
+       }
+      ],
+      "era_estimate": "1980s",
+      "era_evidence": [
+       "label typography",
+       "shawl collar silhouette"
+      ],
+      "fabric_and_construction": [
+       "75% mohair / 25% wool brushed knit"
+      ],
+      "stitching_and_seams": [
+       "linked seams"
+      ],
+      "country_of_manufacture": "England",
+      "country_evidence": "care label",
+      "graphics_or_prints": null,
+      "model_names_or_numbers": [],
+      "size_and_measurements": "~M (20in p2p, 24in length)",
+      "collectible_characteristics": [
+       "high mohair content",
+       "English maker"
+      ],
+      "authenticity_indicators": [
+       "period-correct woven label"
+      ],
+      "expert_inspection_points": [
+       "check for felting/pilling in hand"
+      ]
+     },
+     "jewelry": null,
+     "condition_issues": [
+      {
+       "issue": "general wear noted by seller",
+       "severity": "minor",
+       "image_index": null
+      }
+     ],
+     "value_indicators": [
+      {
+       "indicator": "75% mohair, made in England",
+       "why_it_matters": "Collector demand for high-mohair knits",
+       "strength": "strong"
+      }
+     ],
+     "discrepancies": [
+      {
+       "seller_claim": "'Vintage wool sweater'",
+       "visual_evidence": "Label: 75% mohair, named English maker",
+       "direction": "seller_undervalues",
+       "strength": "strong",
+       "image_index": 3
+      }
+     ],
+     "missing_information": [
+      "sleeve length",
+      "any holes/felting"
+     ],
+     "research_queries": [
+      {
+       "query": "Kingstone Designs mohair cardigan",
+       "marketplace": "ebay",
+       "purpose": "sold comps"
+      },
+      {
+       "query": "vintage 80s mohair cardigan made in England shawl collar",
+       "marketplace": "ebay",
+       "purpose": "sold comps"
+      }
+     ],
+     "warrants_further_research": true,
+     "research_rationale": "Named maker and premium fibre not reflected in title.",
+     "demand_indicator": "high",
+     "liquidity_indicator": "high",
+     "risk_flags": [],
+     "_meta": {
+      "zoom_calls": [],
+      "is_demo": true,
+      "provider": "demo",
+      "model": "demo-fixtures"
+     }
+    }
+   },
+   {
+    "id": 2,
+    "stage": "triage",
+    "provider": "demo",
+    "model": "demo-fixtures",
+    "status": "succeeded",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "est_cost_usd": 0.0,
+    "duration_ms": 0,
+    "error": null,
+    "is_demo": true,
+    "created_at": "2026-10-08T06:01:29.124253",
+    "input_hash": "b34c575e3e10b5c38ebcedf88749a743b7daf7c45cbcf0611c7efd4aa97c163a",
+    "output": {
+     "...": "see schema"
+    }
+   },
+   {
+    "id": 1,
+    "stage": "prefilter",
+    "provider": "rules",
+    "model": null,
+    "status": "succeeded",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "est_cost_usd": 0.0,
+    "duration_ms": 0,
+    "error": null,
+    "is_demo": false,
+    "created_at": "2026-10-08T06:01:29.046707",
+    "input_hash": null,
+    "output": {
+     "...": "see schema"
+    }
+   }
+  ],
+  "feedback": [
+   {
+    "id": 1,
+    "label": "excellent_find",
+    "note": "nice",
+    "created_at": "2026-10-08T06:01:29.901254"
+   }
+  ],
+  "notes": [],
+  "outcome": null
+ },
+ "POST /api/listings/1/finance {bid:40,resale_price:120,sensitivity:true}": {
+  "platform": "ebay",
+  "bid_used": 40.0,
+  "valuation": {
+   "method": "sold_comps",
+   "is_speculative": false,
+   "evidence_quality": "high",
+   "n_sold_comps": 3,
+   "conservative": 125.0,
+   "expected": 120.0,
+   "optimistic": 170.0,
+   "notes": []
+  },
+  "scenarios": {
+   "conservative": {
+    "bid": 40.0,
+    "acquisition_total": 52.95,
+    "acquisition_breakdown": {
+     "bid": 40.0,
+     "buyer_premium": 0.0,
+     "sales_tax": 0.0,
+     "incoming_shipping": 11.95,
+     "handling_fee": 1.0,
+     "other": 0.0
+    },
+    "resale_price": 125.0,
+    "selling_fees": 16.96,
+    "resale_costs": 10.5,
+    "net_proceeds": 97.54,
+    "profit": 44.59,
+    "roi_pct": 84.21,
+    "gross_margin_pct": 57.64,
+    "net_margin_pct": 35.67,
+    "break_even_bid": 84.59,
+    "max_bid": 52.0,
+    "max_bid_binding_constraint": "min_roi",
+    "unknown_costs": [],
+    "assumed_costs": {
+     "outgoing_shipping": 9.5
+    },
+    "complete": true,
+    "notes": []
+   },
+   "expected": {
+    "bid": 40.0,
+    "acquisition_total": 52.95,
+    "acquisition_breakdown": {
+     "bid": 40.0,
+     "buyer_premium": 0.0,
+     "sales_tax": 0.0,
+     "incoming_shipping": 11.95,
+     "handling_fee": 1.0,
+     "other": 0.0
+    },
+    "resale_price": 120.0,
+    "selling_fees": 16.3,
+    "resale_costs": 10.5,
+    "net_proceeds": 93.2,
+    "profit": 40.25,
+    "roi_pct": 76.02,
+    "gross_margin_pct": 55.88,
+    "net_margin_pct": 33.54,
+    "break_even_bid": 80.25,
+    "max_bid": 49.0,
+    "max_bid_binding_constraint": "min_roi",
+    "unknown_costs": [],
+    "assumed_costs": {
+     "outgoing_shipping": 9.5
+    },
+    "complete": true,
+    "notes": []
+   },
+   "optimistic": {
+    "bid": 40.0,
+    "acquisition_total": 52.95,
+    "acquisition_breakdown": {
+     "bid": 40.0,
+     "buyer_premium": 0.0,
+     "sales_tax": 0.0,
+     "incoming_shipping": 11.95,
+     "handling_fee": 1.0,
+     "other": 0.0
+    },
+    "resale_price": 170.0,
+    "selling_fees": 22.93,
+    "resale_costs": 10.5,
+    "net_proceeds": 136.58,
+    "profit": 83.63,
+    "roi_pct": 157.93,
+    "gross_margin_pct": 68.85,
+    "net_margin_pct": 49.19,
+    "break_even_bid": 123.63,
+    "max_bid": 78.0,
+    "max_bid_binding_constraint": "min_roi",
+    "unknown_costs": [],
+    "assumed_costs": {
+     "outgoing_shipping": 9.5
+    },
+    "complete": true,
+    "notes": []
+   }
+  },
+  "risk_adjusted": {
+   "bid": 40.0,
+   "acquisition_total": 52.95,
+   "acquisition_breakdown": {
+    "bid": 40.0,
+    "buyer_premium": 0.0,
+    "sales_tax": 0.0,
+    "incoming_shipping": 11.95,
+    "handling_fee": 1.0,
+    "other": 0.0
+   },
+   "resale_price": 117.16,
+   "selling_fees": 15.92,
+   "resale_costs": 10.5,
+   "net_proceeds": 90.74,
+   "profit": 37.79,
+   "roi_pct": 71.36,
+   "gross_margin_pct": 54.81,
+   "net_margin_pct": 32.25,
+   "break_even_bid": 77.79,
+   "max_bid": 47.0,
+   "max_bid_binding_constraint": "min_roi",
+   "unknown_costs": [],
+   "assumed_costs": {
+    "outgoing_shipping": 9.5
+   },
+   "complete": true,
+   "notes": [],
+   "meta": {
+    "scenario_weights": [
+     0.25,
+     0.6,
+     0.15
+    ],
+    "evidence_quality": "high",
+    "identification_confidence": 0.82,
+    "confidence_haircut_pct": 9.0,
+    "label": "heuristic, uncalibrated",
+    "estimated_months_to_sell": 1.0,
+    "holding_cost": 0.0
+   }
+  },
+  "thresholds": {
+   "min_profit_usd": 25.0,
+   "min_roi_pct": 50.0,
+   "max_capital_at_risk_usd": 250.0,
+   "bid_increment": 1.0
+  },
+  "assumptions_used": {
+   "assumed_costs": {
+    "outgoing_shipping": 9.5
+   },
+   "listing_overrides": {},
+   "request_overrides": {}
+  },
+  "sensitivity": [
+   {
+    "resale_price": 72.0,
+    "incoming_shipping": 6.95,
+    "profit": 3.61,
+    "max_bid": 18.0,
+    "roi_pct": 7.53
+   },
+   {
+    "resale_price": 72.0,
+    "incoming_shipping": 11.95,
+    "profit": -1.39,
+    "max_bid": 13.0,
+    "roi_pct": -2.63
+   },
+   {
+    "resale_price": 72.0,
+    "incoming_shipping": 16.95,
+    "profit": -6.39,
+    "max_bid": 8.0,
+    "roi_pct": -11.03
+   },
+   {
+    "resale_price": 72.0,
+    "incoming_shipping": 26.95,
+    "profit": -16.39,
+    "max_bid": 0.0,
+    "roi_pct": -24.12
+   },
+   {
+    "resale_price": 72.0,
+    "incoming_shipping": 41.95,
+    "profit": -31.39,
+    "max_bid": 0.0,
+    "roi_pct": -37.84
+   },
+   {
+    "resale_price": 96.0,
+    "incoming_shipping": 6.95,
+    "profit": 24.43,
+    "max_bid": 39.0,
+    "roi_pct": 50.95
+   },
+   {
+    "resale_price": 96.0,
+    "incoming_shipping": 11.95,
+    "profit": 19.43,
+    "max_bid": 34.0,
+    "roi_pct": 36.69
+   },
+   {
+    "resale_price": 96.0,
+    "incoming_shipping": 16.95,
+    "profit": 14.43,
+    "max_bid": 29.0,
+    "roi_pct": 24.9
+   },
+   {
+    "resale_price": 96.0,
+    "incoming_shipping": 26.95,
+    "profit": 4.43,
+    "max_bid": 19.0,
+    "roi_pct": 6.52
+   },
+   {
+    "resale_price": 96.0,
+    "incoming_shipping": 41.95,
+    "profit": -10.57,
+    "max_bid": 4.0,
+    "roi_pct": -12.74
+   },
+   {
+    "resale_price": 120.0,
+    "incoming_shipping": 6.95,
+    "profit": 45.25,
+    "max_bid": 54.0,
+    "roi_pct": 94.37
+   },
+   {
+    "resale_price": 120.0,
+    "incoming_shipping": 11.95,
+    "profit": 40.25,
+    "max_bid": 49.0,
+    "roi_pct": 76.02
+   },
+   {
+    "resale_price": 120.0,
+    "incoming_shipping": 16.95,
+    "profit": 35.25,
+    "max_bid": 44.0,
+    "roi_pct": 60.83
+   },
+   {
+    "resale_price": 120.0,
+    "incoming_shipping": 26.95,
+    "profit": 25.25,
+    "max_bid": 34.0,
+    "roi_pct": 37.16
+   },
+   {
+    "resale_price": 120.0,
+    "incoming_shipping": 41.95,
+    "profit": 10.25,
+    "max_bid": 19.0,
+    "roi_pct": 12.36
+   },
+   {
+    "resale_price": 144.0,
+    "incoming_shipping": 6.95,
+    "profit": 66.07,
+    "max_bid": 68.0,
+    "roi_pct": 137.79
+   },
+   {
+    "resale_price": 144.0,
+    "incoming_shipping": 11.95,
+    "profit": 61.07,
+    "max_bid": 63.0,
+    "roi_pct": 115.34
+   },
+   {
+    "resale_price": 144.0,
+    "incoming_shipping": 16.95,
+    "profit": 56.07,
+    "max_bid": 58.0,
+    "roi_pct": 96.76
+   },
+   {
+    "resale_price": 144.0,
+    "incoming_shipping": 26.95,
+    "profit": 46.07,
+    "max_bid": 48.0,
+    "roi_pct": 67.8
+   },
+   {
+    "resale_price": 144.0,
+    "incoming_shipping": 41.95,
+    "profit": 31.07,
+    "max_bid": 33.0,
+    "roi_pct": 37.46
+   },
+   {
+    "resale_price": 180.0,
+    "incoming_shipping": 6.95,
+    "profit": 97.3,
+    "max_bid": 88.0,
+    "roi_pct": 202.92
+   },
+   {
+    "resale_price": 180.0,
+    "incoming_shipping": 11.95,
+    "profit": 92.3,
+    "max_bid": 83.0,
+    "roi_pct": 174.32
+   },
+   {
+    "resale_price": 180.0,
+    "incoming_shipping": 16.95,
+    "profit": 87.3,
+    "max_bid": 78.0,
+    "roi_pct": 150.65
+   },
+   {
+    "resale_price": 180.0,
+    "incoming_shipping": 26.95,
+    "profit": 77.3,
+    "max_bid": 68.0,
+    "roi_pct": 113.76
+   },
+   {
+    "resale_price": 180.0,
+    "incoming_shipping": 41.95,
+    "profit": 62.3,
+    "max_bid": 53.0,
+    "roi_pct": 75.11
+   }
+  ]
+ },
+ "GET /api/analytics/summary": {
+  "items_total": 7,
+  "items_demo": 7,
+  "items_analyzed_deep": 7,
+  "opportunities_by_tier": {
+   "HIGH_CONFIDENCE": 1,
+   "LOW_VALUE": 3,
+   "NEEDS_RESEARCH": 1,
+   "SPECULATIVE_HIGH_UPSIDE": 2
+  },
+  "by_domain": {
+   "clothing": {
+    "HIGH_CONFIDENCE": 1,
+    "LOW_VALUE": 3
+   },
+   "jewelry": {
+    "NEEDS_RESEARCH": 1,
+    "SPECULATIVE_HIGH_UPSIDE": 2
+   }
+  },
+  "opportunity_categories": {
+   "Clothing > Women's > Sweaters": 1,
+   "Jewelry > Bracelets": 1,
+   "Jewelry > Necklaces": 1
+  },
+  "avg_projected_roi_pct": 171.7,
+  "avg_projected_profit_usd": 50.41,
+  "identification_corrections": 1,
+  "feedback_counts": {
+   "excellent_find": 1
+  },
+  "purchases": 0,
+  "sales": 0,
+  "realized_profit_total": 0.0,
+  "avg_days_to_sale": null,
+  "ai_usage": {
+   "days": 30,
+   "spent_today_usd": 0.0,
+   "daily_budget_usd": 5.0,
+   "by_model": []
+  },
+  "recent_runs": 22
+ },
+ "GET /api/settings": {
+  "settings": {
+   "platforms": {
+    "ebay": {
+     "label": "eBay",
+     "final_value_fee_pct": 13.25,
+     "per_order_fee": 0.4,
+     "payment_processing_pct": 0.0,
+     "payment_processing_fixed": 0.0,
+     "listing_fee": 0.0,
+     "seller_pays_shipping": true,
+     "note": "Final value fee varies by category and store level; promoted listings add more."
+    },
+    "etsy": {
+     "label": "Etsy",
+     "final_value_fee_pct": 6.5,
+     "per_order_fee": 0.0,
+     "payment_processing_pct": 3.0,
+     "payment_processing_fixed": 0.25,
+     "listing_fee": 0.2,
+     "seller_pays_shipping": true,
+     "note": "Offsite-ads fees (12-15%) apply when a sale is attributed to Etsy ads."
+    },
+    "depop": {
+     "label": "Depop",
+     "final_value_fee_pct": 0.0,
+     "per_order_fee": 0.0,
+     "payment_processing_pct": 3.3,
+     "payment_processing_fixed": 0.45,
+     "listing_fee": 0.0,
+     "seller_pays_shipping": false,
+     "note": "US: buyer pays a marketplace fee instead of the seller. Non-US sellers still pay 10%."
+    },
+    "grailed": {
+     "label": "Grailed",
+     "final_value_fee_pct": 9.0,
+     "per_order_fee": 0.0,
+     "payment_processing_pct": 3.49,
+     "payment_processing_fixed": 0.49,
+     "listing_fee": 0.0,
+     "seller_pays_shipping": true,
+     "note": "Commission 9% + payment processing."
+    },
+    "local": {
+     "label": "Local sale",
+     "final_value_fee_pct": 0.0,
+     "per_order_fee": 0.0,
+     "payment_processing_pct": 0.0,
+     "payment_processing_fixed": 0.0,
+     "listing_fee": 0.0,
+     "seller_pays_shipping": false,
+     "note": "Cash / in-person."
+    },
+    "custom": {
+     "label": "Custom",
+     "final_value_fee_pct": 10.0,
+     "per_order_fee": 0.0,
+     "payment_processing_pct": 3.0,
+     "payment_processing_fixed": 0.3,
+     "listing_fee": 0.0,
+     "seller_pays_shipping": true,
+     "note": "Edit to match any other channel."
+    }
+   },
+   "default_platform": "ebay",
+   "acquisition": {
+    "buyer_premium_pct": 0.0,
+    "sales_tax_pct": 0.0,
+    "default_incoming_shipping": null,
+    "default_handling_fee": null,
+    "bid_increment": 1.0
+   },
+   "resale": {
+    "clothing_outgoing_shipping": 9.5,
+    "jewelry_outgoing_shipping": 5.0,
+    "packaging_cost": 1.0,
+    "default_cleaning_cost": 0.0,
+    "holding_cost_per_month": 0.0
+   },
+   "thresholds": {
+    "min_profit_usd": 25.0,
+    "min_roi_pct": 50.0,
+    "max_capital_at_risk_usd": 250.0
+   },
+   "risk": {
+    "scenario_weights_by_evidence": {
+     "high": [
+      0.25,
+      0.6,
+      0.15
+     ],
+     "medium": [
+      0.4,
+      0.5,
+      0.1
+     ],
+     "low": [
+      0.6,
+      0.35,
+      0.05
+     ],
+     "none": [
+      0.8,
+      0.2,
+      0.0
+     ]
+    },
+    "identification_confidence_haircut": 0.5,
+    "estimated_months_to_sell": {
+     "high": 1.0,
+     "medium": 2.5,
+     "low": 5.0
+    }
+   },
+   "ranking": {
+    "weights": {
+     "expected_profit": 0.22,
+     "risk_adjusted_profit": 0.18,
+     "roi": 0.1,
+     "identification_confidence": 0.12,
+     "evidence_quality": 0.12,
+     "sell_likelihood": 0.08,
+     "time_to_sell": 0.04,
+     "competition": 0.04,
+     "risk_flags": 0.05,
+     "misidentification_signal": 0.05
+    },
+    "profit_reference_usd": 100.0,
+    "roi_reference_pct": 100.0,
+    "feedback_adjustments": {
+     "excellent_find": 0.15,
+     "worth_investigating": 0.05,
+     "not_worth_buying": -0.5,
+     "incorrect_identification": -0.2,
+     "incorrect_valuation": -0.2,
+     "too_risky": -0.3,
+     "too_slow_to_resell": -0.2
+    }
+   },
+   "analysis": {
+    "auto_escalate_min_triage_interest": 55,
+    "exclude_keywords": [
+     "reproduction",
+     "replica",
+     "costume lot",
+     "craft lot",
+     "fabric scraps"
+    ],
+    "boost_keywords": [
+     "mohair",
+     "cashmere",
+     "selvedge",
+     "selvage",
+     "redline",
+     "big e",
+     "union made",
+     "talon zipper",
+     "sterling",
+     "925",
+     "14k",
+     "18k",
+     "taxco",
+     "modernist",
+     "signed",
+     "hallmark",
+     "hallmarked",
+     "deadstock",
+     "nos",
+     "single stitch",
+     "made in usa",
+     "made in italy",
+     "made in france",
+     "made in england",
+     "harris tweed",
+     "pendleton",
+     "woolrich",
+     "lee",
+     "levi",
+     "wrangler",
+     "carhartt",
+     "schott",
+     "navajo",
+     "georg jensen",
+     "kalo",
+     "ed levin",
+     "spratling",
+     "margot"
+    ],
+    "min_current_bid": 0.0,
+    "max_current_bid": 500.0
+   },
+   "notifications": {
+    "reminder_minutes_before_end": 30,
+    "enable_console_reminders": true
+   },
+   "model_pricing_usd_per_1m": {
+    "claude-haiku-5-5": [
+     0.1,
+     0.5
+    ],
+    "claude-sonnet-5-5": [
+     2.0,
+     10.0
+    ],
+    "claude-opus-5-5": [
+     4.0,
+     20.0
+    ],
+    "gemini-2.5-flash": [
+     0.3,
+     2.5
+    ],
+    "gemini-2.5-flash-lite": [
+     0.1,
+     0.4
+    ],
+    "gemini-2.5-pro": [
+     1.25,
+     10.0
+    ]
+   }
+  },
+  "defaults": {
+   "platforms": {
+    "ebay": {
+     "label": "eBay",
+     "final_value_fee_pct": 13.25,
+     "per_order_fee": 0.4,
+     "payment_processing_pct": 0.0,
+     "payment_processing_fixed": 0.0,
+     "listing_fee": 0.0,
+     "seller_pays_shipping": true,
+     "note": "Final value fee varies by category and store level; promoted listings add more."
+    },
+    "etsy": {
+     "label": "Etsy",
+     "final_value_fee_pct": 6.5,
+     "per_order_fee": 0.0,
+     "payment_processing_pct": 3.0,
+     "payment_processing_fixed": 0.25,
+     "listing_fee": 0.2,
+     "seller_pays_shipping": true,
+     "note": "Offsite-ads fees (12-15%) apply when a sale is attributed to Etsy ads."
+    },
+    "depop": {
+     "label": "Depop",
+     "final_value_fee_pct": 0.0,
+     "per_order_fee": 0.0,
+     "payment_processing_pct": 3.3,
+     "payment_processing_fixed": 0.45,
+     "listing_fee": 0.0,
+     "seller_pays_shipping": false,
+     "note": "US: buyer pays a marketplace fee instead of the seller. Non-US sellers still pay 10%."
+    },
+    "grailed": {
+     "label": "Grailed",
+     "final_value_fee_pct": 9.0,
+     "per_order_fee": 0.0,
+     "payment_processing_pct": 3.49,
+     "payment_processing_fixed": 0.49,
+     "listing_fee": 0.0,
+     "seller_pays_shipping": true,
+     "note": "Commission 9% + payment processing."
+    },
+    "local": {
+     "label": "Local sale",
+     "final_value_fee_pct": 0.0,
+     "per_order_fee": 0.0,
+     "payment_processing_pct": 0.0,
+     "payment_processing_fixed": 0.0,
+     "listing_fee": 0.0,
+     "seller_pays_shipping": false,
+     "note": "Cash / in-person."
+    },
+    "custom": {
+     "label": "Custom",
+     "final_value_fee_pct": 10.0,
+     "per_order_fee": 0.0,
+     "payment_processing_pct": 3.0,
+     "payment_processing_fixed": 0.3,
+     "listing_fee": 0.0,
+     "seller_pays_shipping": true,
+     "note": "Edit to match any other channel."
+    }
+   },
+   "default_platform": "ebay",
+   "acquisition": {
+    "buyer_premium_pct": 0.0,
+    "sales_tax_pct": 0.0,
+    "default_incoming_shipping": null,
+    "default_handling_fee": null,
+    "bid_increment": 1.0
+   },
+   "resale": {
+    "clothing_outgoing_shipping": 9.5,
+    "jewelry_outgoing_shipping": 5.0,
+    "packaging_cost": 1.0,
+    "default_cleaning_cost": 0.0,
+    "holding_cost_per_month": 0.0
+   },
+   "thresholds": {
+    "min_profit_usd": 25.0,
+    "min_roi_pct": 50.0,
+    "max_capital_at_risk_usd": 250.0
+   },
+   "risk": {
+    "scenario_weights_by_evidence": {
+     "high": [
+      0.25,
+      0.6,
+      0.15
+     ],
+     "medium": [
+      0.4,
+      0.5,
+      0.1
+     ],
+     "low": [
+      0.6,
+      0.35,
+      0.05
+     ],
+     "none": [
+      0.8,
+      0.2,
+      0.0
+     ]
+    },
+    "identification_confidence_haircut": 0.5,
+    "estimated_months_to_sell": {
+     "high": 1.0,
+     "medium": 2.5,
+     "low": 5.0
+    }
+   },
+   "ranking": {
+    "weights": {
+     "expected_profit": 0.22,
+     "risk_adjusted_profit": 0.18,
+     "roi": 0.1,
+     "identification_confidence": 0.12,
+     "evidence_quality": 0.12,
+     "sell_likelihood": 0.08,
+     "time_to_sell": 0.04,
+     "competition": 0.04,
+     "risk_flags": 0.05,
+     "misidentification_signal": 0.05
+    },
+    "profit_reference_usd": 100.0,
+    "roi_reference_pct": 100.0,
+    "feedback_adjustments": {
+     "excellent_find": 0.15,
+     "worth_investigating": 0.05,
+     "not_worth_buying": -0.5,
+     "incorrect_identification": -0.2,
+     "incorrect_valuation": -0.2,
+     "too_risky": -0.3,
+     "too_slow_to_resell": -0.2
+    }
+   },
+   "analysis": {
+    "auto_escalate_min_triage_interest": 55,
+    "exclude_keywords": [
+     "reproduction",
+     "replica",
+     "costume lot",
+     "craft lot",
+     "fabric scraps"
+    ],
+    "boost_keywords": [
+     "mohair",
+     "cashmere",
+     "selvedge",
+     "selvage",
+     "redline",
+     "big e",
+     "union made",
+     "talon zipper",
+     "sterling",
+     "925",
+     "14k",
+     "18k",
+     "taxco",
+     "modernist",
+     "signed",
+     "hallmark",
+     "hallmarked",
+     "deadstock",
+     "nos",
+     "single stitch",
+     "made in usa",
+     "made in italy",
+     "made in france",
+     "made in england",
+     "harris tweed",
+     "pendleton",
+     "woolrich",
+     "lee",
+     "levi",
+     "wrangler",
+     "carhartt",
+     "schott",
+     "navajo",
+     "georg jensen",
+     "kalo",
+     "ed levin",
+     "spratling",
+     "margot"
+    ],
+    "min_current_bid": 0.0,
+    "max_current_bid": 500.0
+   },
+   "notifications": {
+    "reminder_minutes_before_end": 30,
+    "enable_console_reminders": true
+   },
+   "model_pricing_usd_per_1m": {
+    "claude-haiku-5-5": [
+     0.1,
+     0.5
+    ],
+    "claude-sonnet-5-5": [
+     2.0,
+     10.0
+    ],
+    "claude-opus-5-5": [
+     4.0,
+     20.0
+    ],
+    "gemini-2.5-flash": [
+     0.3,
+     2.5
+    ],
+    "gemini-2.5-flash-lite": [
+     0.1,
+     0.4
+    ],
+    "gemini-2.5-pro": [
+     1.25,
+     10.0
+    ]
+   }
+  },
+  "env": {
+   "triage_provider": "auto",
+   "triage_model": null,
+   "deep_provider": "auto",
+   "deep_model": null,
+   "daily_budget_usd": 5.0,
+   "per_listing_budget_usd": 0.5,
+   "max_zoom_calls": 6,
+   "enable_unofficial_sgw_api": false,
+   "imap_host": null,
+   "imap_user": null,
+   "buyer_zip": null
+  },
+  "credentials_configured": {
+   "anthropic": false,
+   "gemini": false,
+   "ebay": false,
+   "imap": false
+  },
+  "feedback_labels": [
+   "excellent_find",
+   "worth_investigating",
+   "not_worth_buying",
+   "incorrect_identification",
+   "incorrect_valuation",
+   "too_risky",
+   "too_slow_to_resell",
+   "purchased",
+   "sold"
+  ]
+ },
+ "GET /api/watchlist": {
+  "items": [
+   {
+    "id": 1,
+    "source": "demo",
+    "source_item_id": "demo-mohair_cardigan",
+    "source_url": null,
+    "extraction_method": "demo_fixture",
+    "is_demo": true,
+    "title": "Vintage Wool Sweater Womens Medium",
+    "category": "Clothing > Women's > Sweaters",
+    "seller": "Goodwill of Demo County (synthetic)",
+    "domain": "clothing",
+    "current_bid": 12.0,
+    "num_bids": 2,
+    "buy_now_price": null,
+    "ends_at": "2026-10-09T12:01:28.498913",
+    "shipping_cost": 11.95,
+    "handling_fee": 1.0,
+    "status": "active",
+    "archived": false,
+    "first_seen_at": "2026-10-08T06:01:28.749226",
+    "last_updated_at": "2026-10-08T06:01:28.749226",
+    "last_verified_at": "2026-10-08T06:01:28.749226",
+    "image_count": 4,
+    "thumbnail": {
+     "id": 1,
+     "position": 0,
+     "remote_url": null,
+     "url": "/api/images/1",
+     "sha256": "61775aa42e62b7beeb479fe09a51e38403a47966a3161607a0361f0afb0497c2",
+     "width": 900,
+     "height": 900,
+     "fetch_error": null,
+     "is_demo": true
+    },
+    "identification": {
+     "summary": "1980s Kingstone Designs 75% mohair shawl-collar cardigan, made in England",
+     "confidence": 0.82,
+     "origin": "demo",
+     "domain": "clothing",
+     "warrants_research": true,
+     "misidentification_signal": 0.817,
+     "is_demo": true
+    },
+    "valuation": {
+     "conservative": 125.0,
+     "expected": 148.0,
+     "optimistic": 170.0,
+     "evidence_quality": "high",
+     "is_speculative": false,
+     "n_sold_comps": 3,
+     "method": "sold_comps"
+    },
+    "opportunity": {
+     "score": 93.7,
+     "tier": "HIGH_CONFIDENCE",
+     "components": {
+      "score": 93.7,
+      "tier": "HIGH_CONFIDENCE",
+      "components": {
+       "expected_profit": 0.604,
+       "risk_adjusted_profit": 0.546,
+       "roi": 0.975,
+       "identification_confidence": 0.82,
+       "evidence_quality": 1.0,
+       "sell_likelihood": 1.0,
+       "time_to_sell": 1.0,
+       "competition": 0.714,
+       "risk_flags": 1.0,
+       "misidentification_signal": 0.817
+      },
+      "weights": {
+       "expected_profit": 0.22,
+       "risk_adjusted_profit": 0.18,
+       "roi": 0.1,
+       "identification_confidence": 0.12,
+       "evidence_quality": 0.12,
+       "sell_likelihood": 0.08,
+       "time_to_sell": 0.04,
+       "competition": 0.04,
+       "risk_flags": 0.05,
+       "misidentification_signal": 0.05
+      },
+      "time_factor": 1.0,
+      "hours_left": 30.0,
+      "feedback_adjustment": 0.15,
+      "label": "heuristic weights, uncalibrated"
+     },
+     "finance": {
+      "expected_profit": 92.54,
+      "expected_roi_pct": 370.9,
+      "max_bid": 65.0,
+      "break_even_bid": 104.54,
+      "risk_adjusted_profit": 79.05,
+      "complete": true,
+      "unknown_costs": [],
+      "resale_low": 125.0,
+      "resale_expected": 148.0,
+      "resale_high": 170.0,
+      "evidence_quality": "high",
+      "is_speculative": false,
+      "platform": "ebay",
+      "over_max_bid": false
+     },
+     "computed_at": "2026-10-08T06:01:29.903584"
+    },
+    "watchlist": {
+     "id": 1,
+     "listing_id": 1,
+     "status": "watching",
+     "user_max_bid": 60.0,
+     "remind_minutes_before_end": 30,
+     "reminder_sent_at": null,
+     "notes": null,
+     "archived": false,
+     "created_at": "2026-10-08T06:01:29.974414",
+     "updated_at": "2026-10-08T06:01:29.974417"
+    },
+    "feedback_labels": [
+     "excellent_find"
+    ]
+   }
+  ]
+ },
+ "GET /api/listings/6/references": {
+  "matches": [
+   {
+    "id": 17,
+    "name": "Ed Levin",
+    "entry_type": "maker_mark",
+    "domain": "jewelry",
+    "category": "American studio",
+    "characteristics": "Modernist sterling, 'Ed Levin' or 'EL' marks, hand-forged.",
+    "identifiers": [
+     "ed levin"
+    ],
+    "typical_low": 80.0,
+    "typical_high": 500.0,
+    "demand": "medium",
+    "liquidity": "medium",
+    "match_score": 9.5,
+    "hits": [
+     "name:Ed Levin",
+     "identifier:ed levin",
+     "kw:ed levin",
+     "kw:modernist"
+    ],
+    "is_demo": false
+   }
+  ]
+ },
+ "GET /api/jobs": {
+  "items": []
+ },
+ "GET /api/reference (first 2)": [
+  {
+   "id": 1,
+   "name": "Carhartt Detroit jacket (J97/J01) USA-made",
+   "entry_type": "product",
+   "domain": "clothing",
+   "category": "workwear",
+   "characteristics": "Duck canvas, blanket-lined, corduroy collar; 'Made in USA' label pre-2000s; style codes J97 (blanket) / J01 (Detroit).",
+   "identifiers": [
+    "J97",
+    "J01",
+    "carhartt made in usa"
+   ],
+   "keywords": [
+    "carhartt",
+    "detroit",
+    "chore",
+    "blanket lined",
+    "duck"
+   ],
+   "reference_image_urls": [],
+   "price_evidence": [],
+   "typical_low": 80.0,
+   "typical_high": 200.0,
+   "demand": "high",
+   "liquidity": "high",
+   "id_confidence_notes": null,
+   "source": "seed (approximate guidance; verify)",
+   "is_demo": false,
+   "created_at": "2026-10-08T06:01:29.042697"
+  },
+  {
+   "id": 12,
+   "name": "Comme des Gar\u00e7ons / Yohji Yamamoto archival",
+   "entry_type": "designer",
+   "domain": "clothing",
+   "category": "designer",
+   "characteristics": "AD-year labels (CdG), 'Yohji Yamamoto Pour Homme' labels; made in Japan.",
+   "identifiers": [
+    "comme des garcons",
+    "yohji yamamoto",
+    "ad19",
+    "ad20"
+   ],
+   "keywords": [
+    "comme des garcons",
+    "cdg",
+    "yohji",
+    "yamamoto"
+   ],
+   "reference_image_urls": [],
+   "price_evidence": [],
+   "typical_low": 150.0,
+   "typical_high": 1500.0,
+   "demand": "high",
+   "liquidity": "medium",
+   "id_confidence_notes": null,
+   "source": "seed (approximate guidance; verify)",
+   "is_demo": false,
+   "created_at": "2026-10-08T06:01:29.042709"
+  }
+ ],
+ "GET /api/providers/sold-data": {
+  "providers": [
+   {
+    "name": "manual_entry",
+    "sold_data": true,
+    "available": true,
+    "note": "manual / CSV / JSON comparable entry (always on)"
+   },
+   {
+    "name": "ebay_marketplace_insights",
+    "sold_data": true,
+    "available": false,
+    "note": "requires EBAY_CLIENT_ID/EBAY_CLIENT_SECRET and eBay approval for the Marketplace Insights API (limited release)"
+   },
+   {
+    "name": "ebay_browse_active",
+    "sold_data": false,
+    "available": false,
+    "note": "requires EBAY_CLIENT_ID/EBAY_CLIENT_SECRET (any eBay developer account)"
+   }
+  ]
+ },
+ "GET /api/watchlist/reminders/due": {
+  "due": []
+ }
+}

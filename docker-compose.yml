@@ -1,0 +1,22 @@
+services:
+  backend:
+    build: ./backend
+    env_file: .env
+    environment:
+      OUTLIER_HOST: 0.0.0.0
+      OUTLIER_DATA_DIR: /data
+      OUTLIER_CORS_ORIGINS: '["http://localhost:3000","http://127.0.0.1:3000"]'
+    volumes:
+      - outlier-data:/data
+    ports:
+      - "8000:8000"
+  frontend:
+    build: ./frontend
+    environment:
+      NEXT_PUBLIC_API_BASE: http://127.0.0.1:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+volumes:
+  outlier-data:

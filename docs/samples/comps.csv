@@ -1,0 +1,4 @@
+title,marketplace,url,sold_date,price,shipping_included,shipping_amount,is_sold,accepted_offer,comp_type,similarity,evidence_quality,condition,differences
+Kingstone Designs mohair cardigan England M,ebay,https://www.ebay.com/itm/000000000001,2026-09-18,148,no,,yes,no,same_maker,0.85,high,excellent,"shawl collar, same era"
+80s mohair wool cardigan made in England M,ebay,https://www.ebay.com/itm/000000000002,2026-08-24,125,no,,yes,yes,same_maker,0.75,high,good,"unbranded; accepted offer price"
+Vintage mohair cardigan (asking price),ebay,https://www.ebay.com/itm/000000000003,,240,no,,no,no,active,0.8,low,,"active listing - asking price only"
